@@ -5,7 +5,9 @@ import streamlit as st
 
 # Page Configuration
 st.set_page_config(
-    page_title="Pipe Support Calculator", page_icon="⚙️", layout="wide"
+    page_title="Toyomodec OFS India - Pipe Support Calculator",
+    page_icon="⚙️",
+    layout="wide",
 )
 
 # Fixed Custom CSS for Theme Compatibility
@@ -220,6 +222,11 @@ def get_span(size, group, service, insulated):
     return span_matrix.get(size_str, {}).get(key, 6.0)
 
 
+# Header & Branding
+st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
+st.sidebar.markdown("---")
+st.sidebar.info("Engineering Automation Tool for Pipe Support Calculation")
+
 # Tabs Navigation
 tab1, tab2 = st.tabs(
     ["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"]
@@ -227,7 +234,7 @@ tab1, tab2 = st.tabs(
 
 # TAB 1: LANDING PAGE & GUIDELINES
 with tab1:
-    st.title("🛠️ Automatic Pipe Support Count System")
+    st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
     st.subheader(
         "Calculate support counts for thousands of pipe lines in one click based on Table 5-1 engineering standards."
     )
@@ -302,13 +309,13 @@ with tab1:
     st.download_button(
         label="📥 Download Sample Excel Template",
         data=buffer.getvalue(),
-        file_name="Sample_Pipe_MTO.xlsx",
+        file_name="Toyomodec_Sample_Pipe_MTO.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 # TAB 2: BULK CALCULATOR
 with tab2:
-    st.title("🚀 Bulk Support Calculation Engine")
+    st.title("🚀 Toyomodec Bulk Support Calculation Engine")
     st.write("Upload your MTO (Excel or CSV) file below:")
 
     uploaded_file = st.file_uploader(
@@ -412,7 +419,7 @@ with tab2:
                     st.download_button(
                         label="📥 Download Result as Excel (CSV)",
                         data=csv_data,
-                        file_name="Calculated_Pipe_Supports.csv",
+                        file_name="Toyomodec_Calculated_Pipe_Supports.csv",
                         mime="text/csv",
                     )
 
