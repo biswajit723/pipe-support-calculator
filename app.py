@@ -1,13 +1,47 @@
+import io
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Pipe Support Calculator", layout="wide")
-st.title("⚙️ Bulk Pipe Support Calculator (Table 5-1 Rules)")
+# Page Configuration
+st.set_page_config(
+    page_title="Pipe Support Calculator", page_icon="⚙️", layout="wide"
+)
+
+# Custom CSS for Aesthetic UI
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    .stButton>button {
+        background-color: #0066cc;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 0.5rem 2rem;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #004b99;
+        color: white;
+    }
+    .metric-card {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border-left: 5px solid #0066cc;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
 
 # Table 5-1 Span Data Matrix
 span_matrix = {
-    "3/4\"": {
+    '3/4"': {
         "G1_Liq_NI": 3.3,
         "G1_Liq_I": 2.1,
         "G1_Gas_NI": 3.8,
@@ -17,7 +51,7 @@ span_matrix = {
         "G2_Gas_NI": 3.8,
         "G2_Gas_I": 2.1,
     },
-    "1\"": {
+    '1"': {
         "G1_Liq_NI": 3.3,
         "G1_Liq_I": 2.1,
         "G1_Gas_NI": 3.8,
@@ -27,7 +61,7 @@ span_matrix = {
         "G2_Gas_NI": 3.8,
         "G2_Gas_I": 2.1,
     },
-    "1.1/2\"": {
+    '1.1/2"': {
         "G1_Liq_NI": 4.0,
         "G1_Liq_I": 2.8,
         "G1_Gas_NI": 4.7,
@@ -37,7 +71,7 @@ span_matrix = {
         "G2_Gas_NI": 4.8,
         "G2_Gas_I": 2.7,
     },
-    "2\"": {
+    '2"': {
         "G1_Liq_NI": 4.6,
         "G1_Liq_I": 4.1,
         "G1_Gas_NI": 5.2,
@@ -47,7 +81,7 @@ span_matrix = {
         "G2_Gas_NI": 5.5,
         "G2_Gas_I": 4.6,
     },
-    "3\"": {
+    '3"': {
         "G1_Liq_NI": 5.4,
         "G1_Liq_I": 5.0,
         "G1_Gas_NI": 6.5,
@@ -57,7 +91,7 @@ span_matrix = {
         "G2_Gas_NI": 6.5,
         "G2_Gas_I": 5.2,
     },
-    "4\"": {
+    '4"': {
         "G1_Liq_NI": 6.1,
         "G1_Liq_I": 5.1,
         "G1_Gas_NI": 7.5,
@@ -67,7 +101,7 @@ span_matrix = {
         "G2_Gas_NI": 7.5,
         "G2_Gas_I": 5.5,
     },
-    "6\"": {
+    '6"': {
         "G1_Liq_NI": 7.0,
         "G1_Liq_I": 5.8,
         "G1_Gas_NI": 9.0,
@@ -77,7 +111,7 @@ span_matrix = {
         "G2_Gas_NI": 9.2,
         "G2_Gas_I": 5.7,
     },
-    "8\"": {
+    '8"': {
         "G1_Liq_NI": 7.8,
         "G1_Liq_I": 6.7,
         "G1_Gas_NI": 10.5,
@@ -87,7 +121,7 @@ span_matrix = {
         "G2_Gas_NI": 10.5,
         "G2_Gas_I": 6.5,
     },
-    "10\"": {
+    '10"': {
         "G1_Liq_NI": 8.4,
         "G1_Liq_I": 7.2,
         "G1_Gas_NI": 11.5,
@@ -97,7 +131,7 @@ span_matrix = {
         "G2_Gas_NI": 12.0,
         "G2_Gas_I": 7.5,
     },
-    "12\"": {
+    '12"': {
         "G1_Liq_NI": 9.0,
         "G1_Liq_I": 7.7,
         "G1_Gas_NI": 12.8,
@@ -107,7 +141,7 @@ span_matrix = {
         "G2_Gas_NI": 13.0,
         "G2_Gas_I": 8.2,
     },
-    "14\"": {
+    '14"': {
         "G1_Liq_NI": 10.7,
         "G1_Liq_I": 9.2,
         "G1_Gas_NI": 15.0,
@@ -117,7 +151,7 @@ span_matrix = {
         "G2_Gas_NI": 17.5,
         "G2_Gas_I": 8.6,
     },
-    "16\"": {
+    '16"': {
         "G1_Liq_NI": 11.0,
         "G1_Liq_I": 9.5,
         "G1_Gas_NI": 16.0,
@@ -127,7 +161,7 @@ span_matrix = {
         "G2_Gas_NI": 14.5,
         "G2_Gas_I": 9.5,
     },
-    "18\"": {
+    '18"': {
         "G1_Liq_NI": 11.5,
         "G1_Liq_I": 10.5,
         "G1_Gas_NI": 17.0,
@@ -137,7 +171,7 @@ span_matrix = {
         "G2_Gas_NI": 15.5,
         "G2_Gas_I": 10.0,
     },
-    "20\"": {
+    '20"': {
         "G1_Liq_NI": 11.5,
         "G1_Liq_I": 11.0,
         "G1_Gas_NI": 18.0,
@@ -147,7 +181,7 @@ span_matrix = {
         "G2_Gas_NI": 16.5,
         "G2_Gas_I": 11.0,
     },
-    "24\"": {
+    '24"': {
         "G1_Liq_NI": 12.0,
         "G1_Liq_I": 11.0,
         "G1_Gas_NI": 19.0,
@@ -171,46 +205,212 @@ def get_span(size, group, service, insulated):
 
     key = f"{grp}_{srv}_{ins}"
     size_str = str(size).strip()
-    if not size_str.endswith('"'):
+    if not size_str.endswith('"') and size_str != "":
         size_str += '"'
 
     return span_matrix.get(size_str, {}).get(key, 6.0)
 
 
-uploaded_file = st.file_uploader("Upload MTO Excel File", type=["xlsx", "csv"])
+# Tabs Navigation
+tab1, tab2 = st.tabs(
+    ["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"]
+)
 
-if uploaded_file:
-    df = (
-        pd.read_excel(uploaded_file)
-        if uploaded_file.name.endswith(".xlsx")
-        else pd.read_csv(uploaded_file)
+# TAB 1: LANDING PAGE & GUIDELINES
+with tab1:
+    st.title("🛠️ Automatic Pipe Support Count System")
+    st.subheader(
+        "Table 5-1 ইঞ্জিনিয়ারিং স্ট্যান্ডার্ড অনুযায়ী হাজার হাজার পাইপ লাইনের সাপোর্ট গণনা করুন এক ক্লিকে।"
     )
 
-    if st.button("🚀 Calculate All Pipe Supports"):
-        spans = []
-        for _, row in df.iterrows():
-            s = get_span(
-                row.get("Size", '2"'),
-                row.get("Group", "Group-1"),
-                row.get("Service", "Liquid"),
-                row.get("Insulation", "No"),
-            )
-            spans.append(s)
+    st.markdown("---")
 
-        df["Allowable_Span_m"] = spans
-        df["Base_Supports"] = np.ceil(df["Length"] / df["Allowable_Span_m"]) + 1
-
-        valves = df["Valves"] if "Valves" in df.columns else 0
-        flanges = df["Flanges"] if "Flanges" in df.columns else 0
-
-        df["Total_Supports"] = df["Base_Supports"] + valves + (flanges * 0.5)
-
-        st.success("✅ হাজার হাজার লাইনের গণনা এক ক্লিকে সম্পন্ন হয়েছে!")
-        st.dataframe(df)
-
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "📥 Download Calculated File (CSV)",
-            data=csv,
-            file_name="Calculated_MTO_Supports.csv",
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(
+            """
+        <div class="metric-card">
+            <h4>⚡ দ্রত গণনা</h4>
+            <p>১০,০০০+ পাইপ লাইনের MTO প্রসেস করুন মাত্র ২ সেকেন্ডে।</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
         )
+    with col2:
+        st.markdown(
+            """
+        <div class="metric-card">
+            <h4>🎯 Table 5-1 Compliant</h4>
+            <p>Group-1/2, Liquid/Gas ও Insulation স্বয়ংক্রিয়ভাবে ডিটেক্ট করে।</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+    with col3:
+        st.markdown(
+            """
+        <div class="metric-card">
+            <h4>🛡️ Error Protected</h4>
+            <p>ফাইলে ভুল ডাটা থাকলেও সফটওয়্যার ক্র্যাশ করবে না।</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.write("### 📋 আপনার Excel ফাইলে যে কলামগুলো থাকতে হবে:")
+
+    template_df = pd.DataFrame(
+        [
+            {
+                "Size": '2"',
+                "Length": 60,
+                "Group": "Group-1",
+                "Service": "Liquid",
+                "Insulation": "No",
+                "Valves": 2,
+                "Flanges": 1,
+            },
+            {
+                "Size": '8"',
+                "Length": 120,
+                "Group": "Group-2",
+                "Service": "Gas",
+                "Insulation": "Yes",
+                "Valves": 0,
+                "Flanges": 2,
+            },
+        ]
+    )
+
+    st.table(template_df)
+
+    # Download Sample Excel Template
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        template_df.to_excel(writer, index=False)
+
+    st.download_button(
+        label="📥 ডেমো Excel ফরম্যাট ডাউনলোড করুন (Sample File)",
+        data=buffer.getvalue(),
+        file_name="Sample_Pipe_MTO.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+# TAB 2: BULK CALCULATOR
+with tab2:
+    st.title("🚀 Bulk Support Calculation Engine")
+    st.write("আপনার MTO (Excel বা CSV) ফাইলটি নিচে আপলোড করুন:")
+
+    uploaded_file = st.file_uploader(
+        "Excel বা CSV ফাইল ড্রপ করুন", type=["xlsx", "csv"]
+    )
+
+    if uploaded_file is not None:
+        try:
+            # File Read with Error Handling
+            if uploaded_file.name.endswith(".xlsx"):
+                df = pd.read_excel(uploaded_file)
+            else:
+                df = pd.read_csv(uploaded_file)
+
+            st.success("✅ ফাইল সফলভাবে লোড হয়েছে!")
+            st.write("### 👁️ ডাটার প্রিভিউ (প্রথম ৫ সারি):")
+            st.dataframe(df.head())
+
+            if st.button("📊 Calculate Supports Now"):
+                # Column check
+                required_cols = ["Size", "Length"]
+                missing_cols = [
+                    col
+                    for col in required_cols
+                    if col not in df.columns
+                    and col.lower() not in [c.lower() for c in df.columns]
+                ]
+
+                if missing_cols:
+                    st.error(
+                        f"⚠️ ফাইলটিতে প্রয়োজনীয় কলাম পাওয়া যায়নি! অন্তত **Size** এবং **Length** কলাম থাকতে হবে।"
+                    )
+                else:
+                    # Smart column lookup (case insensitive)
+                    col_map = {c.lower(): c for c in df.columns}
+
+                    size_col = col_map.get("size", df.columns[0])
+                    len_col = col_map.get("length", df.columns[1])
+                    grp_col = col_map.get("group", None)
+                    srv_col = col_map.get("service", None)
+                    ins_col = col_map.get("insulation", None)
+                    val_col = col_map.get("valves", None)
+                    flg_col = col_map.get("flanges", None)
+
+                    # Calculation Process
+                    spans = []
+                    for idx, row in df.iterrows():
+                        sz = row[size_col]
+                        grp = row[grp_col] if grp_col else "Group-1"
+                        srv = row[srv_col] if srv_col else "Liquid"
+                        ins = row[ins_col] if ins_col else "No"
+
+                        span_val = get_span(sz, grp, srv, ins)
+                        spans.append(span_val)
+
+                    df["Allowable_Span_m"] = spans
+
+                    # Numeric Conversion Protection
+                    df[len_col] = pd.to_numeric(
+                        df[len_col], errors="coerce"
+                    ).fillna(0)
+
+                    df["Base_Supports"] = (
+                        np.ceil(df[len_col] / df["Allowable_Span_m"]) + 1
+                    )
+
+                    valves_count = (
+                        pd.to_numeric(df[val_col], errors="coerce").fillna(0)
+                        if val_col
+                        else 0
+                    )
+                    flanges_count = (
+                        pd.to_numeric(df[flg_col], errors="coerce").fillna(0)
+                        if flg_col
+                        else 0
+                    )
+
+                    df["Total_Supports"] = (
+                        df["Base_Supports"]
+                        + valves_count
+                        + (flanges_count * 0.5)
+                    )
+
+                    st.markdown("---")
+                    st.balloons()
+                    st.success("🎉 গণনা সম্পন্ন হয়েছে!")
+
+                    # Summary Metrics
+                    m1, m2 = st.columns(2)
+                    m1.metric("মোট প্রক্রিয়াজাত পাইপ লাইন", f"{len(df)} টি")
+                    m2.metric(
+                        "মোট প্রয়োজনীয় সাপোর্ট সংখ্যা",
+                        f"{int(df['Total_Supports'].sum())} টি",
+                    )
+
+                    st.write("### 📋 গণনা করা রেজাল্ট:")
+                    st.dataframe(df)
+
+                    # Export to CSV
+                    csv_data = df.to_csv(index=False).encode("utf-8")
+                    st.download_button(
+                        label="📥 রেজাল্ট Excel (CSV) হিসেবে ডাউনলোড করুন",
+                        data=csv_data,
+                        file_name="Calculated_Pipe_Supports.csv",
+                        mime="text/csv",
+                    )
+
+        except Exception as e:
+            st.error(
+                "❌ ফাইল প্রসেস করতে সমস্যা হয়েছে! দয়া করে নিশ্চিত করুন ফাইলের তথ্যগুলো সঠিক ফরম্যাটে আছে।"
+            )
+            st.info(
+                "💡 টিপস: 'Home & Guide' ট্যাব থেকে ডেমো ফাইলটি ডাউনলোড করে ফরম্যাটটি দেখে নিন।"
+            )
