@@ -8,31 +8,40 @@ st.set_page_config(
     page_title="Pipe Support Calculator", page_icon="⚙️", layout="wide"
 )
 
-# Custom CSS for Aesthetic UI
+# Fixed Custom CSS for Theme Compatibility
 st.markdown(
     """
     <style>
-    .main {
-        background-color: #f8f9fa;
-    }
     .stButton>button {
-        background-color: #0066cc;
-        color: white;
+        background-color: #0066cc !important;
+        color: #ffffff !important;
         font-weight: bold;
         border-radius: 8px;
         padding: 0.5rem 2rem;
         border: none;
     }
     .stButton>button:hover {
-        background-color: #004b99;
-        color: white;
+        background-color: #004b99 !important;
+        color: #ffffff !important;
     }
     .metric-card {
-        background-color: #ffffff;
-        padding: 15px;
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        border-left: 5px solid #0066cc;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #3b82f6;
+        margin-bottom: 10px;
+    }
+    .metric-card h4 {
+        color: #60a5fa !important;
+        margin-bottom: 8px !important;
+        font-size: 1.1rem !important;
+    }
+    .metric-card p {
+        color: #cbd5e1 !important;
+        margin: 0 !important;
+        font-size: 0.95rem !important;
     }
     </style>
 """,
