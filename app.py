@@ -220,7 +220,7 @@ tab1, tab2 = st.tabs(
 with tab1:
     st.title("🛠️ Automatic Pipe Support Count System")
     st.subheader(
-        "Table 5-1 ইঞ্জিনিয়ারিং স্ট্যান্ডার্ড অনুযায়ী হাজার হাজার পাইপ লাইনের সাপোর্ট গণনা করুন এক ক্লিকে।"
+        "Calculate support counts for thousands of pipe lines in one click based on Table 5-1 engineering standards."
     )
 
     st.markdown("---")
@@ -230,8 +230,8 @@ with tab1:
         st.markdown(
             """
         <div class="metric-card">
-            <h4>⚡ দ্রত গণনা</h4>
-            <p>১০,০০০+ পাইপ লাইনের MTO প্রসেস করুন মাত্র ২ সেকেন্ডে।</p>
+            <h4>⚡ Fast Calculation</h4>
+            <p>Process MTO for 10,000+ pipe lines in under 2 seconds.</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -241,7 +241,7 @@ with tab1:
             """
         <div class="metric-card">
             <h4>🎯 Table 5-1 Compliant</h4>
-            <p>Group-1/2, Liquid/Gas ও Insulation স্বয়ংক্রিয়ভাবে ডিটেক্ট করে।</p>
+            <p>Automatically detects Group-1/2, Liquid/Gas, and Insulation status.</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -251,14 +251,14 @@ with tab1:
             """
         <div class="metric-card">
             <h4>🛡️ Error Protected</h4>
-            <p>ফাইলে ভুল ডাটা থাকলেও সফটওয়্যার ক্র্যাশ করবে না।</p>
+            <p>Software won't crash even if there is missing or invalid data in the file.</p>
         </div>
         """,
             unsafe_allow_html=True,
         )
 
     st.markdown("---")
-    st.write("### 📋 আপনার Excel ফাইলে যে কলামগুলো থাকতে হবে:")
+    st.write("### 📋 Required columns in your Excel file:")
 
     template_df = pd.DataFrame(
         [
@@ -291,7 +291,7 @@ with tab1:
         template_df.to_excel(writer, index=False)
 
     st.download_button(
-        label="📥 ডেমো Excel ফরম্যাট ডাউনলোড করুন (Sample File)",
+        label="📥 Download Sample Excel Template",
         data=buffer.getvalue(),
         file_name="Sample_Pipe_MTO.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -300,10 +300,10 @@ with tab1:
 # TAB 2: BULK CALCULATOR
 with tab2:
     st.title("🚀 Bulk Support Calculation Engine")
-    st.write("আপনার MTO (Excel বা CSV) ফাইলটি নিচে আপলোড করুন:")
+    st.write("Upload your MTO (Excel or CSV) file below:")
 
     uploaded_file = st.file_uploader(
-        "Excel বা CSV ফাইল ড্রপ করুন", type=["xlsx", "csv"]
+        "Drop your Excel or CSV file here", type=["xlsx", "csv"]
     )
 
     if uploaded_file is not None:
@@ -314,8 +314,8 @@ with tab2:
             else:
                 df = pd.read_csv(uploaded_file)
 
-            st.success("✅ ফাইল সফলভাবে লোড হয়েছে!")
-            st.write("### 👁️ ডাটার প্রিভিউ (প্রথম ৫ সারি):")
+            st.success("✅ File loaded successfully!")
+            st.write("### 👁️ Data Preview (First 5 Rows):")
             st.dataframe(df.head())
 
             if st.button("📊 Calculate Supports Now"):
@@ -330,7 +330,7 @@ with tab2:
 
                 if missing_cols:
                     st.error(
-                        f"⚠️ ফাইলটিতে প্রয়োজনীয় কলাম পাওয়া যায়নি! অন্তত **Size** এবং **Length** কলাম থাকতে হবে।"
+                        f"⚠️ Required columns missing! The file must contain at least **Size** and **Length** columns."
                     )
                 else:
                     # Smart column lookup (case insensitive)
@@ -385,23 +385,23 @@ with tab2:
 
                     st.markdown("---")
                     st.balloons()
-                    st.success("🎉 গণনা সম্পন্ন হয়েছে!")
+                    st.success("🎉 Calculation Complete!")
 
                     # Summary Metrics
                     m1, m2 = st.columns(2)
-                    m1.metric("মোট প্রক্রিয়াজাত পাইপ লাইন", f"{len(df)} টি")
+                    m1.metric("Total Pipe Lines Processed", f"{len(df)}")
                     m2.metric(
-                        "মোট প্রয়োজনীয় সাপোর্ট সংখ্যা",
-                        f"{int(df['Total_Supports'].sum())} টি",
+                        "Total Required Supports",
+                        f"{int(df['Total_Supports'].sum())}",
                     )
 
-                    st.write("### 📋 গণনা করা রেজাল্ট:")
+                    st.write("### 📋 Calculated Results:")
                     st.dataframe(df)
 
                     # Export to CSV
                     csv_data = df.to_csv(index=False).encode("utf-8")
                     st.download_button(
-                        label="📥 রেজাল্ট Excel (CSV) হিসেবে ডাউনলোড করুন",
+                        label="📥 Download Result as Excel (CSV)",
                         data=csv_data,
                         file_name="Calculated_Pipe_Supports.csv",
                         mime="text/csv",
@@ -409,8 +409,8 @@ with tab2:
 
         except Exception as e:
             st.error(
-                "❌ ফাইল প্রসেস করতে সমস্যা হয়েছে! দয়া করে নিশ্চিত করুন ফাইলের তথ্যগুলো সঠিক ফরম্যাটে আছে।"
+                "❌ Error processing file! Please ensure the file data is in the correct format."
             )
             st.info(
-                "💡 টিপস: 'Home & Guide' ট্যাব থেকে ডেমো ফাইলটি ডাউনলোড করে ফরম্যাটটি দেখে নিন।"
+                "💡 Tip: Check the 'Home & Guide' tab and download the sample file to verify the format."
             )
