@@ -205,8 +205,14 @@ span_matrix = {
 }
 
 
-def get_span(size, group, service, insulated):
-    grp = "G1" if "1" in str(group) else "G2"
+def get_span(size, material_or_group, service, insulated):
+    # Auto-detect Group based on Material input (Supports SS, SDSS, DSS, CS, Group-1/2)
+    mat_str = str(material_or_group).lower()
+    if any(keyword in mat_str for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]):
+        grp = "G2"
+    else:
+        grp = "G1"  # Default to Group-1 for CS, LTCS, Alloy Steel, etc.
+
     srv = "Liq" if "liquid" in str(service).lower() else "Gas"
     ins = (
         "I"
@@ -257,7 +263,7 @@ with tab1:
             """
         <div class="metric-card">
             <h4>🎯 Table 5-1 Compliant</h4>
-            <p>Automatically detects Group-1/2, Liquid/Gas, and Insulation status.</p>
+            <p>Auto-detects Material (CS/SS/SDSS), Liquid/Gas, and Insulation status.</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -281,7 +287,7 @@ with tab1:
             {
                 "Size": '2"',
                 "Length": 60,
-                "Group": "Group-1",
+                "Material": "CS",
                 "Service": "Liquid",
                 "Insulation": "No",
                 "Valves": 2,
@@ -290,7 +296,7 @@ with tab1:
             {
                 "Size": '8"',
                 "Length": 120,
-                "Group": "Group-2",
+                "Material": "SDSS",
                 "Service": "Gas",
                 "Insulation": "Yes",
                 "Valves": 0,
@@ -354,7 +360,9 @@ with tab2:
 
                     size_col = col_map.get("size", df.columns[0])
                     len_col = col_map.get("length", df.columns[1])
-                    grp_col = col_map.get("group", None)
+                    mat_col = col_map.get(
+                        "material", col_map.get("group", None)
+                    )
                     srv_col = col_map.get("service", None)
                     ins_col = col_map.get("insulation", None)
                     val_col = col_map.get("valves", None)
@@ -364,11 +372,11 @@ with tab2:
                     spans = []
                     for idx, row in df.iterrows():
                         sz = row[size_col]
-                        grp = row[grp_col] if grp_col else "Group-1"
+                        mat = row[mat_col] if mat_col else "CS"
                         srv = row[srv_col] if srv_col else "Liquid"
                         ins = row[ins_col] if ins_col else "No"
 
-                        span_val = get_span(sz, grp, srv, ins)
+                        span_val = get_span(sz, mat, srv, ins)
                         spans.append(span_val)
 
                     df["Allowable_Span_m"] = spans
