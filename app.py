@@ -1,234 +1,381 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piping Support Span Calculator</title>
+import io
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+# Page Configuration
+st.set_page_config(
+    page_title="Toyomodec OFS India - Pipe Support Calculator",
+    page_icon="⚙️",
+    layout="wide",
+)
+
+# Custom CSS
+st.markdown(
+    """
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 25px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .input-box {
-            flex: 1 1 45%;
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        input {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #2c3e50;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        .validation-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+    .stButton>button {
+        background-color: #0066cc !important;
+        color: #ffffff !important;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 0.5rem 2rem;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #004b99 !important;
+        color: #ffffff !important;
+    }
+    .metric-card {
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #3b82f6;
+        margin-bottom: 10px;
+    }
+    .metric-card h4 {
+        color: #60a5fa !important;
+        margin-bottom: 8px !important;
+        font-size: 1.1rem !important;
+    }
+    .metric-card p {
+        color: #cbd5e1 !important;
+        margin: 0 !important;
+        font-size: 0.95rem !important;
+    }
     </style>
-</head>
-<body>
+""",
+    unsafe_allow_html=True,
+)
 
-<div class="container">
-    <h2>Piping Support Span Calculator</h2>
-    
-    <div class="input-group">
-        <div class="input-box">
-            <label>Total Pipe Length (m):</label>
-            <input type="number" id="totalLength" value="50">
-        </div>
-        <div class="input-box">
-            <label>Base Span [1.0 * L] (m):</label>
-            <input type="number" id="baseSpan" value="7.8" step="0.1">
-        </div>
-        <div class="input-box">
-            <label>Valve Location (m):</label>
-            <input type="number" id="valveLoc" value="30">
-        </div>
-        <div class="input-box">
-            <label>Elbow Location (m):</label>
-            <input type="number" id="elbowLoc" value="40">
-        </div>
-    </div>
-
-    <button onclick="calculateLayout()">Calculate Supports</button>
-
-    <div id="outputArea" style="display: none;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Support No.</th>
-                    <th>Location (m)</th>
-                    <th>Rule / Logic Applied</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-
-        <div id="validationResult" class="validation-box"></div>
-    </div>
-</div>
-
-<script>
-function calculateLayout() {
-    const totalLength = parseFloat(document.getElementById('totalLength').value);
-    const baseSpan = parseFloat(document.getElementById('baseSpan').value);
-    const valveLoc = parseFloat(document.getElementById('valveLoc').value);
-    const elbowLoc = parseFloat(document.getElementById('elbowLoc').value);
-
-    let supports = [];
-    
-    // 1. First Support: 0.85 * Span from Start Flange
-    let firstSupport = 0.85 * baseSpan;
-    supports.push({ name: "S1", pos: firstSupport, rule: "Start Flange (0.85 * Span)" });
-
-    let currentPos = firstSupport;
-    let count = 2;
-
-    // 2. Normal Spans before Valve (1.0 * Span)
-    while (currentPos + baseSpan < valveLoc - 0.5) {
-        currentPos += baseSpan;
-        supports.push({ name: `S${count}`, pos: currentPos, rule: "Normal Span (1.0 * Span)" });
-        count++;
-    }
-
-    // 3. Valve Supports (Before and After Valve)
-    let valveUp = valveLoc - 0.5;
-    let valveDown = valveLoc + 0.5;
-    supports.push({ name: `S${count}`, pos: valveUp, rule: "Valve Upstream Support" });
-    count++;
-    supports.push({ name: `S${count}`, pos: valveDown, rule: "Valve Downstream Support" });
-    count++;
-
-    // 4. End Support Position (Total Length - 0.85 * Span)
-    let endSupportPos = totalLength - (0.85 * baseSpan);
-
-    // 5. Normal Spans after Valve up to End Support
-    currentPos = valveDown;
-    while (currentPos + baseSpan < endSupportPos) {
-        currentPos += baseSpan;
-        supports.push({ name: `S${count}`, pos: currentPos, rule: "Normal Span (1.0 * Span)" });
-        count++;
-    }
-
-    // Add End Flange Support
-    supports.push({ name: `S${count}`, pos: endSupportPos, rule: "End Flange (0.85 * Span)" });
-
-    // --- Render Table ---
-    let tableBody = document.getElementById("tableBody");
-    tableBody.innerHTML = "";
-    supports.forEach(sup => {
-        let row = `<tr>
-            <td><strong>${sup.name}</strong></td>
-            <td>${sup.pos.toFixed(2)} m</td>
-            <td>${sup.rule}</td>
-        </tr>`;
-        tableBody.innerHTML += row;
-    });
-
-    // --- Elbow Rule Validation (0.75 * Span) ---
-    let elbowLimit = 0.75 * baseSpan;
-    
-    let supBeforeElbow = supports.filter(s => s.pos < elbowLoc).pop();
-    let supAfterElbow = supports.find(s => s.pos > elbowLoc);
-    
-    let validationBox = document.getElementById("validationResult");
-    
-    if (supBeforeElbow && supAfterElbow) {
-        let actualDist = supAfterElbow.pos - supBeforeElbow.pos;
-        
-        let msg = `<strong>Elbow Span Validation (0.75 * Span Rule):</strong><br>
-                   • Elbow Location: ${elbowLoc} m<br>
-                   • Enclosing Supports: ${supBeforeElbow.name} (${supBeforeElbow.pos.toFixed(2)}m) & ${supAfterElbow.name} (${supAfterElbow.pos.toFixed(2)}m)<br>
-                   • Actual Span Distance: ${actualDist.toFixed(2)} m<br>
-                   • Max Allowed Limit (0.75 * ${baseSpan}): ${elbowLimit.toFixed(2)} m<br><br>`;
-                   
-        if (actualDist <= elbowLimit) {
-            validationBox.className = "validation-box success";
-            validationBox.innerHTML = msg + `✅ SUCCESS: The span (${actualDist.toFixed(2)}m) is within the standard limit (${elbowLimit.toFixed(2)}m).`;
-        } else {
-            validationBox.className = "validation-box error";
-            validationBox.innerHTML = msg + `❌ FAILED: The span exceeds the allowable limit! Adjust supports near the elbow.`;
-        }
-    } else {
-         validationBox.className = "validation-box error";
-         validationBox.innerHTML = "Error: Please check the Elbow location. It must fall between two supports.";
-    }
-
-    document.getElementById("outputArea").style.display = "block";
+# Table 5-1 Span Data Matrix
+span_matrix = {
+    '3/4"': {
+        "G1_Liq_NI": 3.3,
+        "G1_Liq_I": 2.1,
+        "G1_Gas_NI": 3.8,
+        "G1_Gas_I": 2.2,
+        "G2_Liq_NI": 3.2,
+        "G2_Liq_I": 2.0,
+        "G2_Gas_NI": 3.8,
+        "G2_Gas_I": 2.1,
+    },
+    '1"': {
+        "G1_Liq_NI": 3.3,
+        "G1_Liq_I": 2.1,
+        "G1_Gas_NI": 3.8,
+        "G1_Gas_I": 2.2,
+        "G2_Liq_NI": 3.2,
+        "G2_Liq_I": 2.0,
+        "G2_Gas_NI": 3.8,
+        "G2_Gas_I": 2.1,
+    },
+    '1.1/2"': {
+        "G1_Liq_NI": 4.0,
+        "G1_Liq_I": 2.8,
+        "G1_Gas_NI": 4.7,
+        "G1_Gas_I": 3.0,
+        "G2_Liq_NI": 4.0,
+        "G2_Liq_I": 2.5,
+        "G2_Gas_NI": 4.8,
+        "G2_Gas_I": 2.7,
+    },
+    '2"': {
+        "G1_Liq_NI": 4.6,
+        "G1_Liq_I": 4.1,
+        "G1_Gas_NI": 5.2,
+        "G1_Gas_I": 4.2,
+        "G2_Liq_NI": 4.5,
+        "G2_Liq_I": 4.0,
+        "G2_Gas_NI": 5.5,
+        "G2_Gas_I": 4.6,
+    },
+    '3"': {
+        "G1_Liq_NI": 5.4,
+        "G1_Liq_I": 5.0,
+        "G1_Gas_NI": 6.5,
+        "G1_Gas_I": 5.5,
+        "G2_Liq_NI": 5.1,
+        "G2_Liq_I": 4.8,
+        "G2_Gas_NI": 6.5,
+        "G2_Gas_I": 5.2,
+    },
+    '4"': {
+        "G1_Liq_NI": 6.1,
+        "G1_Liq_I": 5.1,
+        "G1_Gas_NI": 7.5,
+        "G1_Gas_I": 5.5,
+        "G2_Liq_NI": 5.5,
+        "G2_Liq_I": 5.0,
+        "G2_Gas_NI": 7.5,
+        "G2_Gas_I": 5.5,
+    },
+    '6"': {
+        "G1_Liq_NI": 7.0,
+        "G1_Liq_I": 5.8,
+        "G1_Gas_NI": 9.0,
+        "G1_Gas_I": 6.7,
+        "G2_Liq_NI": 5.8,
+        "G2_Liq_I": 4.5,
+        "G2_Gas_NI": 9.2,
+        "G2_Gas_I": 5.7,
+    },
+    '8"': {
+        "G1_Liq_NI": 7.8,
+        "G1_Liq_I": 6.7,
+        "G1_Gas_NI": 10.5,
+        "G1_Gas_I": 8.0,
+        "G2_Liq_NI": 6.5,
+        "G2_Liq_I": 5.0,
+        "G2_Gas_NI": 10.5,
+        "G2_Gas_I": 6.5,
+    },
+    '10"': {
+        "G1_Liq_NI": 8.4,
+        "G1_Liq_I": 7.2,
+        "G1_Gas_NI": 11.5,
+        "G1_Gas_I": 9.0,
+        "G2_Liq_NI": 7.0,
+        "G2_Liq_I": 5.5,
+        "G2_Gas_NI": 12.0,
+        "G2_Gas_I": 7.5,
+    },
+    '12"': {
+        "G1_Liq_NI": 9.0,
+        "G1_Liq_I": 7.7,
+        "G1_Gas_NI": 12.8,
+        "G1_Gas_I": 9.7,
+        "G2_Liq_NI": 7.3,
+        "G2_Liq_I": 6.0,
+        "G2_Gas_NI": 13.0,
+        "G2_Gas_I": 8.2,
+    },
+    '14"': {
+        "G1_Liq_NI": 10.7,
+        "G1_Liq_I": 9.2,
+        "G1_Gas_NI": 15.0,
+        "G1_Gas_I": 10.2,
+        "G2_Liq_NI": 7.5,
+        "G2_Liq_I": 6.2,
+        "G2_Gas_NI": 17.5,
+        "G2_Gas_I": 8.6,
+    },
+    '16"': {
+        "G1_Liq_NI": 11.0,
+        "G1_Liq_I": 9.5,
+        "G1_Gas_NI": 16.0,
+        "G1_Gas_I": 11.5,
+        "G2_Liq_NI": 7.7,
+        "G2_Liq_I": 6.5,
+        "G2_Gas_NI": 14.5,
+        "G2_Gas_I": 9.5,
+    },
+    '18"': {
+        "G1_Liq_NI": 11.5,
+        "G1_Liq_I": 10.5,
+        "G1_Gas_NI": 17.0,
+        "G1_Gas_I": 12.2,
+        "G2_Liq_NI": 7.8,
+        "G2_Liq_I": 6.7,
+        "G2_Gas_NI": 15.5,
+        "G2_Gas_I": 10.0,
+    },
+    '20"': {
+        "G1_Liq_NI": 11.5,
+        "G1_Liq_I": 11.0,
+        "G1_Gas_NI": 18.0,
+        "G1_Gas_I": 13.0,
+        "G2_Liq_NI": 8.4,
+        "G2_Liq_I": 7.2,
+        "G2_Gas_NI": 16.5,
+        "G2_Gas_I": 11.0,
+    },
+    '24"': {
+        "G1_Liq_NI": 12.0,
+        "G1_Liq_I": 11.0,
+        "G1_Gas_NI": 19.0,
+        "G1_Gas_I": 14.0,
+        "G2_Liq_NI": 9.0,
+        "G2_Liq_I": 8.0,
+        "G2_Gas_NI": 18.0,
+        "G2_Gas_I": 12.5,
+    },
 }
-</script>
 
-</body>
-</html>
+
+def get_span(size, material_or_group, service, insulated):
+    mat_str = str(material_or_group).lower()
+    if any(
+        keyword in mat_str
+        for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]
+    ):
+        grp = "G2"
+    else:
+        grp = "G1"
+
+    srv = "Liq" if "liquid" in str(service).lower() else "Gas"
+    ins = (
+        "I"
+        if "yes" in str(insulated).lower() or "insulated" in str(insulated).lower()
+        else "NI"
+    )
+
+    key = f"{grp}_{srv}_{ins}"
+    size_str = str(size).strip()
+    if not size_str.endswith('"') and size_str != "":
+        size_str += '"'
+
+    return span_matrix.get(size_str, {}).get(key, 6.0)
+
+
+# Header
+st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
+st.sidebar.markdown("---")
+st.sidebar.info(
+    "Engineering Automation Tool for Pipe Support Calculation (Table 5-1 & Fig 5-1)"
+)
+
+tab1, tab2 = st.tabs(
+    ["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"]
+)
+
+with tab1:
+    st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
+    st.subheader(
+        "Calculate support counts based on Table 5-1 and Figure 5-1 Direction Change standards."
+    )
+
+    st.markdown("---")
+    st.write("### 📋 Required columns in your Excel file:")
+
+    template_df = pd.DataFrame(
+        [
+            {
+                "Size": '2"',
+                "Length": 60,
+                "Material": "CS",
+                "Service": "Liquid",
+                "Insulation": "No",
+                "Valves": 2,
+                "Flanges": 1,
+                "Elbows": 4,
+                "Tees": 1,
+            },
+            {
+                "Size": '8"',
+                "Length": 120,
+                "Material": "SDSS",
+                "Service": "Gas",
+                "Insulation": "Yes",
+                "Valves": 0,
+                "Flanges": 2,
+                "Elbows": 2,
+                "Tees": 0,
+            },
+        ]
+    )
+
+    st.table(template_df)
+
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        template_df.to_excel(writer, index=False)
+
+    st.download_button(
+        label="📥 Download Sample Excel Template",
+        data=buffer.getvalue(),
+        file_name="Toyomodec_Sample_Pipe_MTO.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+with tab2:
+    st.title("🚀 Bulk Pipe Support Calculator")
+    uploaded_file = st.file_uploader(
+        "Upload MTO File (.xlsx / .csv)", type=["xlsx", "csv"]
+    )
+
+    if uploaded_file is not None:
+        try:
+            if uploaded_file.name.endswith(".xlsx"):
+                df = pd.read_excel(uploaded_file)
+            else:
+                df = pd.read_csv(uploaded_file)
+
+            st.success("✅ File loaded successfully!")
+
+            if st.button("📊 Calculate Supports Now"):
+                col_map = {c.lower(): c for c in df.columns}
+
+                size_col = col_map.get("size", df.columns[0])
+                len_col = col_map.get("length", df.columns[1])
+                mat_col = col_map.get("material", col_map.get("group", None))
+                srv_col = col_map.get("service", None)
+                ins_col = col_map.get("insulation", None)
+                val_col = col_map.get("valves", None)
+                flg_col = col_map.get("flanges", None)
+                elb_col = col_map.get("elbows", col_map.get("elbow", None))
+                tee_col = col_map.get("tees", col_map.get("tee", None))
+
+                base_spans = []
+                eff_spans = []
+                total_supports = []
+
+                for idx, row in df.iterrows():
+                    sz = row[size_col]
+                    mat = row[mat_col] if mat_col else "CS"
+                    srv = row[srv_col] if srv_col else "Liquid"
+                    ins = row[ins_col] if ins_col else "No"
+                    length = float(pd.to_numeric(row[len_col], errors="coerce") or 0)
+
+                    valves = float(pd.to_numeric(row[val_col] if val_col else 0, errors="coerce") or 0)
+                    flanges = float(pd.to_numeric(row[flg_col] if flg_col else 0, errors="coerce") or 0)
+                    elbows = float(pd.to_numeric(row[elb_col] if elb_col else 0, errors="coerce") or 0)
+                    tees = float(pd.to_numeric(row[tee_col] if tee_col else 0, errors="coerce") or 0)
+
+                    # 1. Base Span from Table 5-1
+                    L = get_span(sz, mat, srv, ins)
+                    base_spans.append(L)
+
+                    # 2. Estimated Base Supports for straight pipe
+                    base_sup_count = np.ceil(length / L) if L > 0 else 1
+
+                    # 3. Figure 5-1 Adjustment: Reduction Factor for Direction Changes
+                    # Elbow reduces span to 0.75L (-25%), Tee reduces to 0.70L (-30%)
+                    if base_sup_count > 0:
+                        elbow_ratio = min(elbows / base_sup_count, 1.0)
+                        tee_ratio = min(tees / base_sup_count, 1.0)
+                        red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
+                        red_factor = max(red_factor, 0.70)  # Min limit 0.70L
+                    else:
+                        red_factor = 1.0
+
+                    effective_span = round(L * red_factor, 2)
+                    eff_spans.append(effective_span)
+
+                    # 4. Final Support Count Calculation
+                    base_supports = np.ceil(length / effective_span) + 1 if effective_span > 0 else 0
+                    total = base_supports + valves + (flanges * 0.5)
+                    total_supports.append(total)
+
+                df["Base_Span_m"] = base_spans
+                df["Effective_Span_m"] = eff_spans
+                df["Total_Supports"] = total_supports
+
+                st.balloons()
+                st.success("🎉 Calculation Complete with Figure 5-1 Standards!")
+
+                st.write("### 📋 Results Table:")
+                st.dataframe(df)
+
+                csv_data = df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="📥 Download Calculated Result",
+                    data=csv_data,
+                    file_name="Toyomodec_Directional_Pipe_Supports.csv",
+                    mime="text/csv",
+                )
+
+        except Exception as e:
+            st.error(f"❌ Error in calculation: {e}")
