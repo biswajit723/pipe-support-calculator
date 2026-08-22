@@ -29,7 +29,7 @@ st.markdown(
     .metric-card {
         background-color: #1e293b;
         color: #f8fafc;
-        padding: 20px;
+        padding: 15px;
         border-radius: 10px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         border-left: 5px solid #3b82f6;
@@ -37,13 +37,14 @@ st.markdown(
     }
     .metric-card h4 {
         color: #60a5fa !important;
-        margin-bottom: 8px !important;
-        font-size: 1.1rem !important;
+        margin-bottom: 5px !important;
+        font-size: 0.95rem !important;
     }
     .metric-card p {
         color: #cbd5e1 !important;
         margin: 0 !important;
-        font-size: 0.95rem !important;
+        font-size: 1.4rem !important;
+        font-weight: bold;
     }
     </style>
 """,
@@ -211,21 +212,44 @@ with tab2:
                 df["base support without flange,valve,tee,elbow"] = base_sup_no_extras_list
                 df["Total_Supports"] = total_supports_list
 
-                # Top Summary Metric Display
+                # Top Summary Metric Display (Updated to show totals for all support categories)
                 st.markdown("---")
-                col1, col2 = st.columns(2)
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     st.markdown(f"""
                         <div class="metric-card">
                             <h4>Total Pipes Analyzed</h4>
-                            <p style="font-size: 1.8rem; font-weight: bold;">{len(df)} Lines</p>
+                            <p>{len(df)} Lines</p>
                         </div>
                     """, unsafe_allow_html=True)
                 with col2:
                     st.markdown(f"""
                         <div class="metric-card">
-                            <h4>Total Supports Required (MTO)</h4>
-                            <p style="font-size: 1.8rem; font-weight: bold; color: #4ade80 !important;">{sum(total_supports_list)} Supports</p>
+                            <h4>Base Support (Pure) Total</h4>
+                            <p>{sum(base_sup_no_extras_list)}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <h4>Base Span Support Total</h4>
+                            <p>{sum(base_span_support_list)}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                col4, col5 = st.columns(2)
+                with col4:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <h4>Eff. Base Span Support Total</h4>
+                            <p>{sum(eff_base_span_support_list)}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col5:
+                    st.markdown(f"""
+                        <div class="metric-card" style="border-left: 5px solid #4ade80;">
+                            <h4 style="color: #4ade80 !important;">Total Supports Required (MTO)</h4>
+                            <p style="color: #4ade80 !important;">{sum(total_supports_list)} Supports</p>
                         </div>
                     """, unsafe_allow_html=True)
                 st.markdown("---")
