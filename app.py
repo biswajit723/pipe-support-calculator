@@ -230,7 +230,7 @@ def get_span(size, material_or_group, service, insulated):
     return span_matrix.get(size_str, {}).get(key, 6.0)
 
 
-# Header
+# Sidebar Header
 st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
 st.sidebar.markdown("---")
 st.sidebar.info(
@@ -244,7 +244,7 @@ tab1, tab2 = st.tabs(
 with tab1:
     st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
     st.subheader(
-        "Calculate support counts based on Table 5-1 and Figure 5-1 Direction Change standards."
+        "Compare support counts with and without Effective Span adjustments."
     )
 
     st.markdown("---")
@@ -320,7 +320,8 @@ with tab2:
 
                 base_spans = []
                 eff_spans = []
-                base_supports_list = []
+                sup_without_eff = []
+                sup_with_eff = []
                 total_supports_list = []
 
                 for idx, row in df.iterrows():
@@ -339,13 +340,14 @@ with tab2:
                     L = get_span(sz, mat, srv, ins)
                     base_spans.append(L)
 
-                    # Estimated base count for reduction calculation
-                    est_base_count = np.ceil(length / L) if L > 0 else 1
+                    # 2. Base Supports WITHOUT Effective Span Adjustment
+                    sup_no_eff = (np.ceil(length / L) + 1) if L > 0 else 0
+                    sup_without_eff.append(int(sup_no_eff))
 
-                    # 2. Figure 5-1 Adjustment (Effective Span)
-                    if est_base_count > 0:
-                        elbow_ratio = min(elbows / est_base_count, 1.0)
-                        tee_ratio = min(tees / est_base_count, 1.0)
+                    # 3. Figure 5-1 Adjustment (Effective Span)
+                    if sup_no_eff > 0:
+                        elbow_ratio = min(elbows / sup_no_eff, 1.0)
+                        tee_ratio = min(tees / sup_no_eff, 1.0)
                         red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
                         red_factor = max(red_factor, 0.70)
                     else:
@@ -354,27 +356,28 @@ with tab2:
                     effective_span = round(L * red_factor, 2)
                     eff_spans.append(effective_span)
 
-                    # 3. Base Supports Count (Straight Pipe run without Valve/Flange)
-                    base_sup = (np.ceil(length / effective_span) + 1) if effective_span > 0 else 0
-                    base_supports_list.append(int(base_sup))
+                    # 4. Base Supports WITH Effective Span Adjustment
+                    sup_eff = (np.ceil(length / effective_span) + 1) if effective_span > 0 else 0
+                    sup_with_eff.append(int(sup_eff))
 
-                    # 4. Total Supports Count (Including Valves & Flanges)
-                    total_sup = base_sup + valves + (flanges * 0.5)
+                    # 5. Total Supports Count (Including Valves & Flanges)
+                    total_sup = sup_eff + valves + (flanges * 0.5)
                     total_supports_list.append(total_sup)
 
                 df["Base_Span_m"] = base_spans
                 df["Effective_Span_m"] = eff_spans
-                df["Base_Supports"] = base_supports_list
+                df["Supports_Without_Effective_Span"] = sup_without_eff
+                df["Supports_With_Effective_Span"] = sup_with_eff
                 df["Total_Supports"] = total_supports_list
 
                 st.balloons()
-                st.success("🎉 Calculation Complete with Base Supports & Total Supports!")
+                st.success("🎉 Calculation Complete with Side-by-Side Comparison!")
 
-                # Summary
+                # Metric Cards
                 m1, m2, m3 = st.columns(3)
-                m1.metric("Total Pipe Lines Processed", f"{len(df)}")
-                m2.metric("Total Base Supports (Straight)", f"{int(df['Base_Supports'].sum())}")
-                m3.metric("Total Supports (Final)", f"{int(df['Total_Supports'].sum())}")
+                m1.metric("Without Effective Span (Base)", f"{int(df['Supports_Without_Effective_Span'].sum())}")
+                m2.metric("With Effective Span (Bend Adjusted)", f"{int(df['Supports_With_Effective_Span'].sum())}")
+                m3.metric("Final Total Supports (With Fittings)", f"{int(df['Total_Supports'].sum())}")
 
                 st.write("### 📋 Results Table:")
                 st.dataframe(df)
@@ -383,7 +386,7 @@ with tab2:
                 st.download_button(
                     label="📥 Download Calculated Result",
                     data=csv_data,
-                    file_name="Toyomodec_Complete_Pipe_Supports.csv",
+                    file_name="Toyomodec_Pipe_Support_Comparison.csv",
                     mime="text/csv",
                 )
 
