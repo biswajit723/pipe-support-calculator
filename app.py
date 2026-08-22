@@ -260,8 +260,8 @@ with tab1:
                 "Insulation": "No",
                 "Valves": 2,
                 "Flanges": 1,
-                "Elbows": 4,
-                "Tees": 1,
+                "Elbows": 3,
+                "Tees": 0,
             },
             {
                 "Size": '8"',
@@ -271,7 +271,7 @@ with tab1:
                 "Insulation": "Yes",
                 "Valves": 0,
                 "Flanges": 2,
-                "Elbows": 2,
+                "Elbows": 5,
                 "Tees": 0,
             },
         ]
@@ -320,7 +320,8 @@ with tab2:
 
                 base_spans = []
                 eff_spans = []
-                total_supports = []
+                base_supports_list = []
+                total_supports_list = []
 
                 for idx, row in df.iterrows():
                     sz = row[size_col]
@@ -338,33 +339,42 @@ with tab2:
                     L = get_span(sz, mat, srv, ins)
                     base_spans.append(L)
 
-                    # 2. Estimated Base Supports for straight pipe
-                    base_sup_count = np.ceil(length / L) if L > 0 else 1
+                    # Estimated base count for reduction calculation
+                    est_base_count = np.ceil(length / L) if L > 0 else 1
 
-                    # 3. Figure 5-1 Adjustment: Reduction Factor for Direction Changes
-                    # Elbow reduces span to 0.75L (-25%), Tee reduces to 0.70L (-30%)
-                    if base_sup_count > 0:
-                        elbow_ratio = min(elbows / base_sup_count, 1.0)
-                        tee_ratio = min(tees / base_sup_count, 1.0)
+                    # 2. Figure 5-1 Adjustment (Effective Span)
+                    if est_base_count > 0:
+                        elbow_ratio = min(elbows / est_base_count, 1.0)
+                        tee_ratio = min(tees / est_base_count, 1.0)
                         red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
-                        red_factor = max(red_factor, 0.70)  # Min limit 0.70L
+                        red_factor = max(red_factor, 0.70)
                     else:
                         red_factor = 1.0
 
                     effective_span = round(L * red_factor, 2)
                     eff_spans.append(effective_span)
 
-                    # 4. Final Support Count Calculation
-                    base_supports = np.ceil(length / effective_span) + 1 if effective_span > 0 else 0
-                    total = base_supports + valves + (flanges * 0.5)
-                    total_supports.append(total)
+                    # 3. Base Supports Count (Straight Pipe run without Valve/Flange)
+                    base_sup = (np.ceil(length / effective_span) + 1) if effective_span > 0 else 0
+                    base_supports_list.append(int(base_sup))
+
+                    # 4. Total Supports Count (Including Valves & Flanges)
+                    total_sup = base_sup + valves + (flanges * 0.5)
+                    total_supports_list.append(total_sup)
 
                 df["Base_Span_m"] = base_spans
                 df["Effective_Span_m"] = eff_spans
-                df["Total_Supports"] = total_supports
+                df["Base_Supports"] = base_supports_list
+                df["Total_Supports"] = total_supports_list
 
                 st.balloons()
-                st.success("🎉 Calculation Complete with Figure 5-1 Standards!")
+                st.success("🎉 Calculation Complete with Base Supports & Total Supports!")
+
+                # Summary
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Total Pipe Lines Processed", f"{len(df)}")
+                m2.metric("Total Base Supports (Straight)", f"{int(df['Base_Supports'].sum())}")
+                m3.metric("Total Supports (Final)", f"{int(df['Total_Supports'].sum())}")
 
                 st.write("### 📋 Results Table:")
                 st.dataframe(df)
@@ -373,7 +383,7 @@ with tab2:
                 st.download_button(
                     label="📥 Download Calculated Result",
                     data=csv_data,
-                    file_name="Toyomodec_Directional_Pipe_Supports.csv",
+                    file_name="Toyomodec_Complete_Pipe_Supports.csv",
                     mime="text/csv",
                 )
 
