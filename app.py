@@ -208,7 +208,10 @@ span_matrix = {
 def get_span(size, material_or_group, service, insulated):
     # Auto-detect Group based on Material input (Supports SS, SDSS, DSS, CS, Group-1/2)
     mat_str = str(material_or_group).lower()
-    if any(keyword in mat_str for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]):
+    if any(
+        keyword in mat_str
+        for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]
+    ):
         grp = "G2"
     else:
         grp = "G1"  # Default to Group-1 for CS, LTCS, Alloy Steel, etc.
@@ -292,6 +295,7 @@ with tab1:
                 "Insulation": "No",
                 "Valves": 2,
                 "Flanges": 1,
+                "Elbows": 4,
             },
             {
                 "Size": '8"',
@@ -301,6 +305,7 @@ with tab1:
                 "Insulation": "Yes",
                 "Valves": 0,
                 "Flanges": 2,
+                "Elbows": 2,
             },
         ]
     )
@@ -367,6 +372,7 @@ with tab2:
                     ins_col = col_map.get("insulation", None)
                     val_col = col_map.get("valves", None)
                     flg_col = col_map.get("flanges", None)
+                    elb_col = col_map.get("elbows", col_map.get("elbow", None))
 
                     # Calculation Process
                     spans = []
@@ -400,11 +406,17 @@ with tab2:
                         if flg_col
                         else 0
                     )
+                    elbows_count = (
+                        pd.to_numeric(df[elb_col], errors="coerce").fillna(0)
+                        if elb_col
+                        else 0
+                    )
 
                     df["Total_Supports"] = (
                         df["Base_Supports"]
                         + valves_count
                         + (flanges_count * 0.5)
+                        + (elbows_count * 0.5)
                     )
 
                     st.markdown("---")
