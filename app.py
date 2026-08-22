@@ -89,13 +89,13 @@ def get_span(size, material_or_group, service, insulated):
 # Header Sidebar
 st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
 st.sidebar.markdown("---")
-st.sidebar.info("Engineering Automation Tool for Pipe Support Calculation (Table 5-1 & Fig 5-1)")
+st.sidebar.info("Engineering Automation Tool for Pipe Support Calculation")
 
 tab1, tab2 = st.tabs(["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"])
 
 with tab1:
     st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
-    st.subheader("Calculate exact supports based on End Span (0.85*L), Normal Spans, Valves, and Elbow rules.")
+    st.subheader("Calculate supports based on Table 5-1 and End Span (0.85*L) standards.")
 
     st.markdown("---")
     st.write("### 📋 Required columns in your Excel file:")
@@ -140,13 +140,15 @@ with tab2:
                 srv_col = col_map.get("service", None)
                 ins_col = col_map.get("insulation", None)
                 val_col = col_map.get("valves", None)
-                flg_col = col_map.get("flanges", None)
                 elb_col = col_map.get("elbows", col_map.get("elbow", None))
                 tee_col = col_map.get("tees", col_map.get("tee", None))
 
-                base_spans = []
-                total_supports = []
-                details_list = []
+                base_span_list = []
+                eff_base_span_m_list = []
+                eff_base_span_support_list = []
+                base_span_support_list = []
+                base_sup_no_extras_list = []
+                total_supports_list = []
 
                 for idx, row in df.iterrows():
                     sz = row[size_col]
@@ -156,40 +158,60 @@ with tab2:
                     length = float(pd.to_numeric(row[len_col], errors="coerce") or 0)
 
                     valves = float(pd.to_numeric(row[val_col] if val_col else 0, errors="coerce") or 0)
-                    flanges = float(pd.to_numeric(row[flg_col] if flg_col else 0, errors="coerce") or 0)
                     elbows = float(pd.to_numeric(row[elb_col] if elb_col else 0, errors="coerce") or 0)
                     tees = float(pd.to_numeric(row[tee_col] if tee_col else 0, errors="coerce") or 0)
 
                     # 1. Base Span from Table 5-1 (L)
                     L = get_span(sz, mat, srv, ins)
-                    base_spans.append(L)
+                    base_span_list.append(L)
 
-                    # 2. Support Logic Implementation:
-                    # - Start & End Flanges use 0.85 * L reduction near ends
-                    # - Intermediate straight runs use 1.0 * L (Base Span)
-                    # - Each Valve requires 2 supports (upstream & downstream)
-                    # - Elbows/Tees check against 0.75 * L limit
-                    
+                    # 2. Base support without flange, valve, tee, elbow (Pure length / L)
+                    base_sup_pure = np.ceil(length / L) if L > 0 else 0
+                    base_sup_no_extras_list.append(int(base_sup_pure))
+
+                    # 3. Base span support (End Span 0.85*L rule applied for start/end)
                     if length <= (2 * 0.85 * L):
-                        # Short pipe handled by end supports
-                        normal_supports = 2 if length > 0 else 0
+                        base_span_sup = 2 if length > 0 else 0
                     else:
                         remaining_length = length - (2 * 0.85 * L)
-                        normal_supports = 2 + np.ceil(remaining_length / L)
+                        base_span_sup = 2 + np.ceil(remaining_length / L)
+                    base_span_support_list.append(int(base_span_sup))
 
-                    # Valve supports (2 supports per valve)
+                    # 4. Effective Span Calculation (Elbow / Tee reduction limit up to 0.75*L)
+                    if base_sup_pure > 0:
+                        elbow_ratio = min(elbows / base_sup_pure, 1.0)
+                        tee_ratio = min(tees / base_sup_pure, 1.0)
+                        red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
+                        red_factor = max(red_factor, 0.75) # Min limit 0.75L rule
+                    else:
+                        red_factor = 1.0
+
+                    eff_span = L * red_factor
+                    
+                    # 5. Effective Base Span Support (Applying End Span 0.85 * eff_span)
+                    if length <= (2 * 0.85 * eff_span):
+                        eff_base_sup = 2 if length > 0 else 0
+                    else:
+                        rem_len_eff = length - (2 * 0.85 * eff_span)
+                        eff_base_sup = 2 + np.ceil(rem_len_eff / eff_span)
+                    
+                    eff_base_span_support_list.append(int(eff_base_sup))
+                    eff_base_span_m_list.append(round(eff_span, 2))
+
+                    # 6. Total Supports Calculation (Valves need 2 supports each; Flanges require 0 extra support)
                     valve_supports = valves * 2
+                    total_sup = eff_base_sup + valve_supports
+                    total_supports_list.append(int(total_sup))
 
-                    # Total support summation
-                    total_sup = normal_supports + valve_supports
-                    total_supports.append(int(total_sup))
-                    details_list.append(f"Base L={L}m | Norm/End Sup={int(normal_supports)} | Valve Sup={int(valve_supports)}")
+                # Assigning exact requested column names to DataFrame
+                df["Base_Span_m"] = base_span_list
+                df["effective base span per miter"] = eff_base_span_m_list
+                df["effective bas span support"] = eff_base_span_support_list
+                df["base span support"] = base_span_support_list
+                df["base support without flange,valve,tee,elbow"] = base_sup_no_extras_list
+                df["Total_Supports"] = total_supports_list
 
-                df["Base_Span_m"] = base_spans
-                df["Calculation_Details"] = details_list
-                df["Total_Supports"] = total_supports
-
-                # Top Summary Metric
+                # Top Summary Metric Display
                 st.markdown("---")
                 col1, col2 = st.columns(2)
                 with col1:
@@ -203,13 +225,13 @@ with tab2:
                     st.markdown(f"""
                         <div class="metric-card">
                             <h4>Total Supports Required (MTO)</h4>
-                            <p style="font-size: 1.8rem; font-weight: bold; color: #4ade80 !important;">{sum(total_supports)} Supports</p>
+                            <p style="font-size: 1.8rem; font-weight: bold; color: #4ade80 !important;">{sum(total_supports_list)} Supports</p>
                         </div>
                     """, unsafe_allow_html=True)
                 st.markdown("---")
 
                 st.balloons()
-                st.success("🎉 Calculation Complete based on your exact engineering logic!")
+                st.success("🎉 Calculation Complete successfully!")
 
                 st.write("### 📋 Results Table:")
                 st.dataframe(df, use_container_width=True)
@@ -218,7 +240,7 @@ with tab2:
                 st.download_button(
                     label="📥 Download Calculated Result (CSV)",
                     data=csv_data,
-                    file_name="Toyomodec_Exact_Pipe_Supports.csv",
+                    file_name="Toyomodec_Pipe_Supports_Calculated.csv",
                     mime="text/csv",
                 )
 
