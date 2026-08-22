@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# Fixed Custom CSS for Theme Compatibility
+# Custom CSS
 st.markdown(
     """
     <style>
@@ -206,7 +206,6 @@ span_matrix = {
 
 
 def get_span(size, material_or_group, service, insulated):
-    # Auto-detect Group based on Material input (Supports SS, SDSS, DSS, CS, Group-1/2)
     mat_str = str(material_or_group).lower()
     if any(
         keyword in mat_str
@@ -214,7 +213,7 @@ def get_span(size, material_or_group, service, insulated):
     ):
         grp = "G2"
     else:
-        grp = "G1"  # Default to Group-1 for CS, LTCS, Alloy Steel, etc.
+        grp = "G1"
 
     srv = "Liq" if "liquid" in str(service).lower() else "Gas"
     ins = (
@@ -231,56 +230,22 @@ def get_span(size, material_or_group, service, insulated):
     return span_matrix.get(size_str, {}).get(key, 6.0)
 
 
-# Header & Branding
+# Header
 st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
 st.sidebar.markdown("---")
-st.sidebar.info("Engineering Automation Tool for Pipe Support Calculation")
+st.sidebar.info(
+    "Engineering Automation Tool for Pipe Support Calculation (Table 5-1 & Fig 5-1)"
+)
 
-# Tabs Navigation
 tab1, tab2 = st.tabs(
     ["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"]
 )
 
-# TAB 1: LANDING PAGE & GUIDELINES
 with tab1:
     st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
     st.subheader(
-        "Calculate support counts for thousands of pipe lines in one click based on Table 5-1 engineering standards."
+        "Calculate support counts based on Table 5-1 and Figure 5-1 Direction Change standards."
     )
-
-    st.markdown("---")
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(
-            """
-        <div class="metric-card">
-            <h4>⚡ Fast Calculation</h4>
-            <p>Process MTO for 10,000+ pipe lines in under 2 seconds.</p>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            """
-        <div class="metric-card">
-            <h4>🎯 Table 5-1 Compliant</h4>
-            <p>Auto-detects Material (CS/SS/SDSS), Liquid/Gas, and Insulation status.</p>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-    with col3:
-        st.markdown(
-            """
-        <div class="metric-card">
-            <h4>🛡️ Error Protected</h4>
-            <p>Software won't crash even if there is missing or invalid data in the file.</p>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
 
     st.markdown("---")
     st.write("### 📋 Required columns in your Excel file:")
@@ -296,6 +261,7 @@ with tab1:
                 "Valves": 2,
                 "Flanges": 1,
                 "Elbows": 4,
+                "Tees": 1,
             },
             {
                 "Size": '8"',
@@ -306,13 +272,13 @@ with tab1:
                 "Valves": 0,
                 "Flanges": 2,
                 "Elbows": 2,
+                "Tees": 0,
             },
         ]
     )
 
     st.table(template_df)
 
-    # Download Sample Excel Template
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         template_df.to_excel(writer, index=False)
@@ -324,129 +290,92 @@ with tab1:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-# TAB 2: BULK CALCULATOR
 with tab2:
-    st.title("🚀 Toyomodec Bulk Support Calculation Engine")
-    st.write("Upload your MTO (Excel or CSV) file below:")
-
+    st.title("🚀 Bulk Pipe Support Calculator")
     uploaded_file = st.file_uploader(
-        "Drop your Excel or CSV file here", type=["xlsx", "csv"]
+        "Upload MTO File (.xlsx / .csv)", type=["xlsx", "csv"]
     )
 
     if uploaded_file is not None:
         try:
-            # File Read with Error Handling
             if uploaded_file.name.endswith(".xlsx"):
                 df = pd.read_excel(uploaded_file)
             else:
                 df = pd.read_csv(uploaded_file)
 
             st.success("✅ File loaded successfully!")
-            st.write("### 👁️ Data Preview (First 5 Rows):")
-            st.dataframe(df.head())
 
             if st.button("📊 Calculate Supports Now"):
-                # Column check
-                required_cols = ["Size", "Length"]
-                missing_cols = [
-                    col
-                    for col in required_cols
-                    if col not in df.columns
-                    and col.lower() not in [c.lower() for c in df.columns]
-                ]
+                col_map = {c.lower(): c for c in df.columns}
 
-                if missing_cols:
-                    st.error(
-                        f"⚠️ Required columns missing! The file must contain at least **Size** and **Length** columns."
-                    )
-                else:
-                    # Smart column lookup (case insensitive)
-                    col_map = {c.lower(): c for c in df.columns}
+                size_col = col_map.get("size", df.columns[0])
+                len_col = col_map.get("length", df.columns[1])
+                mat_col = col_map.get("material", col_map.get("group", None))
+                srv_col = col_map.get("service", None)
+                ins_col = col_map.get("insulation", None)
+                val_col = col_map.get("valves", None)
+                flg_col = col_map.get("flanges", None)
+                elb_col = col_map.get("elbows", col_map.get("elbow", None))
+                tee_col = col_map.get("tees", col_map.get("tee", None))
 
-                    size_col = col_map.get("size", df.columns[0])
-                    len_col = col_map.get("length", df.columns[1])
-                    mat_col = col_map.get(
-                        "material", col_map.get("group", None)
-                    )
-                    srv_col = col_map.get("service", None)
-                    ins_col = col_map.get("insulation", None)
-                    val_col = col_map.get("valves", None)
-                    flg_col = col_map.get("flanges", None)
-                    elb_col = col_map.get("elbows", col_map.get("elbow", None))
+                base_spans = []
+                eff_spans = []
+                total_supports = []
 
-                    # Calculation Process
-                    spans = []
-                    for idx, row in df.iterrows():
-                        sz = row[size_col]
-                        mat = row[mat_col] if mat_col else "CS"
-                        srv = row[srv_col] if srv_col else "Liquid"
-                        ins = row[ins_col] if ins_col else "No"
+                for idx, row in df.iterrows():
+                    sz = row[size_col]
+                    mat = row[mat_col] if mat_col else "CS"
+                    srv = row[srv_col] if srv_col else "Liquid"
+                    ins = row[ins_col] if ins_col else "No"
+                    length = float(pd.to_numeric(row[len_col], errors="coerce") or 0)
 
-                        span_val = get_span(sz, mat, srv, ins)
-                        spans.append(span_val)
+                    valves = float(pd.to_numeric(row[val_col] if val_col else 0, errors="coerce") or 0)
+                    flanges = float(pd.to_numeric(row[flg_col] if flg_col else 0, errors="coerce") or 0)
+                    elbows = float(pd.to_numeric(row[elb_col] if elb_col else 0, errors="coerce") or 0)
+                    tees = float(pd.to_numeric(row[tee_col] if tee_col else 0, errors="coerce") or 0)
 
-                    df["Allowable_Span_m"] = spans
+                    # 1. Base Span from Table 5-1
+                    L = get_span(sz, mat, srv, ins)
+                    base_spans.append(L)
 
-                    # Numeric Conversion Protection
-                    df[len_col] = pd.to_numeric(
-                        df[len_col], errors="coerce"
-                    ).fillna(0)
+                    # 2. Estimated Base Supports for straight pipe
+                    base_sup_count = np.ceil(length / L) if L > 0 else 1
 
-                    df["Base_Supports"] = (
-                        np.ceil(df[len_col] / df["Allowable_Span_m"]) + 1
-                    )
+                    # 3. Figure 5-1 Adjustment: Reduction Factor for Direction Changes
+                    # Elbow reduces span to 0.75L (-25%), Tee reduces to 0.70L (-30%)
+                    if base_sup_count > 0:
+                        elbow_ratio = min(elbows / base_sup_count, 1.0)
+                        tee_ratio = min(tees / base_sup_count, 1.0)
+                        red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
+                        red_factor = max(red_factor, 0.70)  # Min limit 0.70L
+                    else:
+                        red_factor = 1.0
 
-                    valves_count = (
-                        pd.to_numeric(df[val_col], errors="coerce").fillna(0)
-                        if val_col
-                        else 0
-                    )
-                    flanges_count = (
-                        pd.to_numeric(df[flg_col], errors="coerce").fillna(0)
-                        if flg_col
-                        else 0
-                    )
-                    elbows_count = (
-                        pd.to_numeric(df[elb_col], errors="coerce").fillna(0)
-                        if elb_col
-                        else 0
-                    )
+                    effective_span = round(L * red_factor, 2)
+                    eff_spans.append(effective_span)
 
-                    df["Total_Supports"] = (
-                        df["Base_Supports"]
-                        + valves_count
-                        + (flanges_count * 0.5)
-                        + (elbows_count * 0.5)
-                    )
+                    # 4. Final Support Count Calculation
+                    base_supports = np.ceil(length / effective_span) + 1 if effective_span > 0 else 0
+                    total = base_supports + valves + (flanges * 0.5)
+                    total_supports.append(total)
 
-                    st.markdown("---")
-                    st.balloons()
-                    st.success("🎉 Calculation Complete!")
+                df["Base_Span_m"] = base_spans
+                df["Effective_Span_m"] = eff_spans
+                df["Total_Supports"] = total_supports
 
-                    # Summary Metrics
-                    m1, m2 = st.columns(2)
-                    m1.metric("Total Pipe Lines Processed", f"{len(df)}")
-                    m2.metric(
-                        "Total Required Supports",
-                        f"{int(df['Total_Supports'].sum())}",
-                    )
+                st.balloons()
+                st.success("🎉 Calculation Complete with Figure 5-1 Standards!")
 
-                    st.write("### 📋 Calculated Results:")
-                    st.dataframe(df)
+                st.write("### 📋 Results Table:")
+                st.dataframe(df)
 
-                    # Export to CSV
-                    csv_data = df.to_csv(index=False).encode("utf-8")
-                    st.download_button(
-                        label="📥 Download Result as Excel (CSV)",
-                        data=csv_data,
-                        file_name="Toyomodec_Calculated_Pipe_Supports.csv",
-                        mime="text/csv",
-                    )
+                csv_data = df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="📥 Download Calculated Result",
+                    data=csv_data,
+                    file_name="Toyomodec_Directional_Pipe_Supports.csv",
+                    mime="text/csv",
+                )
 
         except Exception as e:
-            st.error(
-                "❌ Error processing file! Please ensure the file data is in the correct format."
-            )
-            st.info(
-                "💡 Tip: Check the 'Home & Guide' tab and download the sample file to verify the format."
-            )
+            st.error(f"❌ Error in calculation: {e}")
