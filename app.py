@@ -13,12 +13,12 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto;
             background: #fff;
-            padding: 20px 30px;
+            padding: 25px 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         h2 {
             text-align: center;
@@ -101,7 +101,7 @@
 <body>
 
 <div class="container">
-    <h2>Piping Support Layout Generator</h2>
+    <h2>Piping Support Span Calculator</h2>
     
     <div class="input-group">
         <div class="input-box">
@@ -130,7 +130,7 @@
                 <tr>
                     <th>Support No.</th>
                     <th>Location (m)</th>
-                    <th>Rule Applied</th>
+                    <th>Rule / Logic Applied</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -149,21 +149,21 @@ function calculateLayout() {
 
     let supports = [];
     
-    // Rule 1: First Support (0.85 * Span)
+    // 1. First Support: 0.85 * Span from Start Flange
     let firstSupport = 0.85 * baseSpan;
-    supports.push({ name: "S1", pos: firstSupport, rule: "End Flange (0.85 * Span)" });
+    supports.push({ name: "S1", pos: firstSupport, rule: "Start Flange (0.85 * Span)" });
 
     let currentPos = firstSupport;
     let count = 2;
 
-    // Rule 2: Normal Spans before Valve
+    // 2. Normal Spans before Valve (1.0 * Span)
     while (currentPos + baseSpan < valveLoc - 0.5) {
         currentPos += baseSpan;
         supports.push({ name: `S${count}`, pos: currentPos, rule: "Normal Span (1.0 * Span)" });
         count++;
     }
 
-    // Rule 3: Valve Supports (0.5m before and after valve)
+    // 3. Valve Supports (Before and After Valve)
     let valveUp = valveLoc - 0.5;
     let valveDown = valveLoc + 0.5;
     supports.push({ name: `S${count}`, pos: valveUp, rule: "Valve Upstream Support" });
@@ -171,10 +171,10 @@ function calculateLayout() {
     supports.push({ name: `S${count}`, pos: valveDown, rule: "Valve Downstream Support" });
     count++;
 
-    // Rule 4: End Support position (Total Length - 0.85*Span)
+    // 4. End Support Position (Total Length - 0.85 * Span)
     let endSupportPos = totalLength - (0.85 * baseSpan);
 
-    // Rule 5: Normal Spans after Valve
+    // 5. Normal Spans after Valve up to End Support
     currentPos = valveDown;
     while (currentPos + baseSpan < endSupportPos) {
         currentPos += baseSpan;
@@ -182,7 +182,7 @@ function calculateLayout() {
         count++;
     }
 
-    // Add End Support
+    // Add End Flange Support
     supports.push({ name: `S${count}`, pos: endSupportPos, rule: "End Flange (0.85 * Span)" });
 
     // --- Render Table ---
@@ -191,7 +191,7 @@ function calculateLayout() {
     supports.forEach(sup => {
         let row = `<tr>
             <td><strong>${sup.name}</strong></td>
-            <td>${sup.pos.toFixed(2)}</td>
+            <td>${sup.pos.toFixed(2)} m</td>
             <td>${sup.rule}</td>
         </tr>`;
         tableBody.innerHTML += row;
@@ -200,7 +200,6 @@ function calculateLayout() {
     // --- Elbow Rule Validation (0.75 * Span) ---
     let elbowLimit = 0.75 * baseSpan;
     
-    // Find supports right before and after the elbow
     let supBeforeElbow = supports.filter(s => s.pos < elbowLoc).pop();
     let supAfterElbow = supports.find(s => s.pos > elbowLoc);
     
@@ -209,25 +208,24 @@ function calculateLayout() {
     if (supBeforeElbow && supAfterElbow) {
         let actualDist = supAfterElbow.pos - supBeforeElbow.pos;
         
-        let msg = `<strong>Elbow Validation (0.75 * Span Rule):</strong><br>
-                   Elbow Location: ${elbowLoc} m<br>
-                   Supports near Elbow: ${supBeforeElbow.name} (${supBeforeElbow.pos.toFixed(2)}m) and ${supAfterElbow.name} (${supAfterElbow.pos.toFixed(2)}m)<br>
-                   Actual Distance: ${actualDist.toFixed(2)} m <br>
-                   Maximum Allowed Distance (0.75 * ${baseSpan}): ${elbowLimit.toFixed(2)} m <br><br>`;
+        let msg = `<strong>Elbow Span Validation (0.75 * Span Rule):</strong><br>
+                   • Elbow Location: ${elbowLoc} m<br>
+                   • Enclosing Supports: ${supBeforeElbow.name} (${supBeforeElbow.pos.toFixed(2)}m) & ${supAfterElbow.name} (${supAfterElbow.pos.toFixed(2)}m)<br>
+                   • Actual Span Distance: ${actualDist.toFixed(2)} m<br>
+                   • Max Allowed Limit (0.75 * ${baseSpan}): ${elbowLimit.toFixed(2)} m<br><br>`;
                    
         if (actualDist <= elbowLimit) {
             validationBox.className = "validation-box success";
-            validationBox.innerHTML = msg + "✅ SUCCESS: The distance is within the standard limit.";
+            validationBox.innerHTML = msg + `✅ SUCCESS: The span (${actualDist.toFixed(2)}m) is within the standard limit (${elbowLimit.toFixed(2)}m).`;
         } else {
             validationBox.className = "validation-box error";
-            validationBox.innerHTML = msg + "❌ FAILED: The distance exceeds standard limit. Adjust spans!";
+            validationBox.innerHTML = msg + `❌ FAILED: The span exceeds the allowable limit! Adjust supports near the elbow.`;
         }
     } else {
          validationBox.className = "validation-box error";
-         validationBox.innerHTML = "Error: Please check Elbow location. It should be between supports.";
+         validationBox.innerHTML = "Error: Please check the Elbow location. It must fall between two supports.";
     }
 
-    // Show output
     document.getElementById("outputArea").style.display = "block";
 }
 </script>
