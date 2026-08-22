@@ -102,8 +102,8 @@ with tab1:
     st.write("### 📋 Required columns in your Excel file:")
 
     template_df = pd.DataFrame([
-        {"Size": '2"', "Length": 60, "Material": "CS", "Service": "Liquid", "Insulation": "No", "Valves": 2, "Flanges": 2, "Elbows": 4, "Tees": 1},
-        {"Size": '8"', "Length": 120, "Material": "SDSS", "Service": "Gas", "Insulation": "Yes", "Valves": 1, "Flanges": 2, "Elbows": 2, "Tees": 0},
+        {"Size": '2"', "Length": 60, "Material": "CS", "Service": "Liquid", "Insulation": "No", "Valves": 2, "Flanges": 2, "Elbows": 4},
+        {"Size": '8"', "Length": 120, "Material": "SDSS", "Service": "Gas", "Insulation": "Yes", "Valves": 1, "Flanges": 2, "Elbows": 2},
     ])
 
     st.table(template_df)
@@ -142,7 +142,6 @@ with tab2:
                 ins_col = col_map.get("insulation", None)
                 val_col = col_map.get("valves", None)
                 elb_col = col_map.get("elbows", col_map.get("elbow", None))
-                tee_col = col_map.get("tees", col_map.get("tee", None))
 
                 base_span_list = []
                 eff_base_span_m_list = []
@@ -160,13 +159,12 @@ with tab2:
 
                     valves = float(pd.to_numeric(row[val_col], errors="coerce")) if val_col and pd.notna(row[val_col]) else 0.0
                     elbows = float(pd.to_numeric(row[elb_col], errors="coerce")) if elb_col and pd.notna(row[elb_col]) else 0.0
-                    tees = float(pd.to_numeric(row[tee_col], errors="coerce")) if tee_col and pd.notna(row[tee_col]) else 0.0
 
                     # 1. Base Span from Table 5-1 (L)
                     L = get_span(sz, mat, srv, ins)
                     base_span_list.append(L)
 
-                    # 2. Base support without flange, valve, tee, elbow
+                    # 2. Base support without flange, valve, elbow
                     base_sup_pure = np.ceil(length / L) if L > 0 else 0
                     base_sup_no_extras_list.append(int(base_sup_pure))
 
@@ -178,11 +176,10 @@ with tab2:
                         base_span_sup = 2 + np.ceil(remaining_length / L)
                     base_span_support_list.append(int(base_span_sup))
 
-                    # 4. Effective Span Calculation (Elbow / Tee reduction limit up to 0.75*L)
+                    # 4. Effective Span Calculation (Elbow reduction limit up to 0.75*L)
                     if base_sup_pure > 0:
                         elbow_ratio = min(elbows / base_sup_pure, 1.0)
-                        tee_ratio = min(tees / base_sup_pure, 1.0)
-                        red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
+                        red_factor = 1.0 - (0.25 * elbow_ratio)
                         red_factor = max(red_factor, 0.75)
                     else:
                         red_factor = 1.0
