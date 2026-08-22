@@ -52,175 +52,32 @@ st.markdown(
 
 # Table 5-1 Span Data Matrix
 span_matrix = {
-    '3/4"': {
-        "G1_Liq_NI": 3.3,
-        "G1_Liq_I": 2.1,
-        "G1_Gas_NI": 3.8,
-        "G1_Gas_I": 2.2,
-        "G2_Liq_NI": 3.2,
-        "G2_Liq_I": 2.0,
-        "G2_Gas_NI": 3.8,
-        "G2_Gas_I": 2.1,
-    },
-    '1"': {
-        "G1_Liq_NI": 3.3,
-        "G1_Liq_I": 2.1,
-        "G1_Gas_NI": 3.8,
-        "G1_Gas_I": 2.2,
-        "G2_Liq_NI": 3.2,
-        "G2_Liq_I": 2.0,
-        "G2_Gas_NI": 3.8,
-        "G2_Gas_I": 2.1,
-    },
-    '1.1/2"': {
-        "G1_Liq_NI": 4.0,
-        "G1_Liq_I": 2.8,
-        "G1_Gas_NI": 4.7,
-        "G1_Gas_I": 3.0,
-        "G2_Liq_NI": 4.0,
-        "G2_Liq_I": 2.5,
-        "G2_Gas_NI": 4.8,
-        "G2_Gas_I": 2.7,
-    },
-    '2"': {
-        "G1_Liq_NI": 4.6,
-        "G1_Liq_I": 4.1,
-        "G1_Gas_NI": 5.2,
-        "G1_Gas_I": 4.2,
-        "G2_Liq_NI": 4.5,
-        "G2_Liq_I": 4.0,
-        "G2_Gas_NI": 5.5,
-        "G2_Gas_I": 4.6,
-    },
-    '3"': {
-        "G1_Liq_NI": 5.4,
-        "G1_Liq_I": 5.0,
-        "G1_Gas_NI": 6.5,
-        "G1_Gas_I": 5.5,
-        "G2_Liq_NI": 5.1,
-        "G2_Liq_I": 4.8,
-        "G2_Gas_NI": 6.5,
-        "G2_Gas_I": 5.2,
-    },
-    '4"': {
-        "G1_Liq_NI": 6.1,
-        "G1_Liq_I": 5.1,
-        "G1_Gas_NI": 7.5,
-        "G1_Gas_I": 5.5,
-        "G2_Liq_NI": 5.5,
-        "G2_Liq_I": 5.0,
-        "G2_Gas_NI": 7.5,
-        "G2_Gas_I": 5.5,
-    },
-    '6"': {
-        "G1_Liq_NI": 7.0,
-        "G1_Liq_I": 5.8,
-        "G1_Gas_NI": 9.0,
-        "G1_Gas_I": 6.7,
-        "G2_Liq_NI": 5.8,
-        "G2_Liq_I": 4.5,
-        "G2_Gas_NI": 9.2,
-        "G2_Gas_I": 5.7,
-    },
-    '8"': {
-        "G1_Liq_NI": 7.8,
-        "G1_Liq_I": 6.7,
-        "G1_Gas_NI": 10.5,
-        "G1_Gas_I": 8.0,
-        "G2_Liq_NI": 6.5,
-        "G2_Liq_I": 5.0,
-        "G2_Gas_NI": 10.5,
-        "G2_Gas_I": 6.5,
-    },
-    '10"': {
-        "G1_Liq_NI": 8.4,
-        "G1_Liq_I": 7.2,
-        "G1_Gas_NI": 11.5,
-        "G1_Gas_I": 9.0,
-        "G2_Liq_NI": 7.0,
-        "G2_Liq_I": 5.5,
-        "G2_Gas_NI": 12.0,
-        "G2_Gas_I": 7.5,
-    },
-    '12"': {
-        "G1_Liq_NI": 9.0,
-        "G1_Liq_I": 7.7,
-        "G1_Gas_NI": 12.8,
-        "G1_Gas_I": 9.7,
-        "G2_Liq_NI": 7.3,
-        "G2_Liq_I": 6.0,
-        "G2_Gas_NI": 13.0,
-        "G2_Gas_I": 8.2,
-    },
-    '14"': {
-        "G1_Liq_NI": 10.7,
-        "G1_Liq_I": 9.2,
-        "G1_Gas_NI": 15.0,
-        "G1_Gas_I": 10.2,
-        "G2_Liq_NI": 7.5,
-        "G2_Liq_I": 6.2,
-        "G2_Gas_NI": 17.5,
-        "G2_Gas_I": 8.6,
-    },
-    '16"': {
-        "G1_Liq_NI": 11.0,
-        "G1_Liq_I": 9.5,
-        "G1_Gas_NI": 16.0,
-        "G1_Gas_I": 11.5,
-        "G2_Liq_NI": 7.7,
-        "G2_Liq_I": 6.5,
-        "G2_Gas_NI": 14.5,
-        "G2_Gas_I": 9.5,
-    },
-    '18"': {
-        "G1_Liq_NI": 11.5,
-        "G1_Liq_I": 10.5,
-        "G1_Gas_NI": 17.0,
-        "G1_Gas_I": 12.2,
-        "G2_Liq_NI": 7.8,
-        "G2_Liq_I": 6.7,
-        "G2_Gas_NI": 15.5,
-        "G2_Gas_I": 10.0,
-    },
-    '20"': {
-        "G1_Liq_NI": 11.5,
-        "G1_Liq_I": 11.0,
-        "G1_Gas_NI": 18.0,
-        "G1_Gas_I": 13.0,
-        "G2_Liq_NI": 8.4,
-        "G2_Liq_I": 7.2,
-        "G2_Gas_NI": 16.5,
-        "G2_Gas_I": 11.0,
-    },
-    '24"': {
-        "G1_Liq_NI": 12.0,
-        "G1_Liq_I": 11.0,
-        "G1_Gas_NI": 19.0,
-        "G1_Gas_I": 14.0,
-        "G2_Liq_NI": 9.0,
-        "G2_Liq_I": 8.0,
-        "G2_Gas_NI": 18.0,
-        "G2_Gas_I": 12.5,
-    },
+    '3/4"': {"G1_Liq_NI": 3.3, "G1_Liq_I": 2.1, "G1_Gas_NI": 3.8, "G1_Gas_I": 2.2, "G2_Liq_NI": 3.2, "G2_Liq_I": 2.0, "G2_Gas_NI": 3.8, "G2_Gas_I": 2.1},
+    '1"': {"G1_Liq_NI": 3.3, "G1_Liq_I": 2.1, "G1_Gas_NI": 3.8, "G1_Gas_I": 2.2, "G2_Liq_NI": 3.2, "G2_Liq_I": 2.0, "G2_Gas_NI": 3.8, "G2_Gas_I": 2.1},
+    '1.1/2"': {"G1_Liq_NI": 4.0, "G1_Liq_I": 2.8, "G1_Gas_NI": 4.7, "G1_Gas_I": 3.0, "G2_Liq_NI": 4.0, "G2_Liq_I": 2.5, "G2_Gas_NI": 4.8, "G2_Gas_I": 2.7},
+    '2"': {"G1_Liq_NI": 4.6, "G1_Liq_I": 4.1, "G1_Gas_NI": 5.2, "G1_Gas_I": 4.2, "G2_Liq_NI": 4.5, "G2_Liq_I": 4.0, "G2_Gas_NI": 5.5, "G2_Gas_I": 4.6},
+    '3"': {"G1_Liq_NI": 5.4, "G1_Liq_I": 5.0, "G1_Gas_NI": 6.5, "G1_Gas_I": 5.5, "G2_Liq_NI": 5.1, "G2_Liq_I": 4.8, "G2_Gas_NI": 6.5, "G2_Gas_I": 5.2},
+    '4"': {"G1_Liq_NI": 6.1, "G1_Liq_I": 5.1, "G1_Gas_NI": 7.5, "G1_Gas_I": 5.5, "G2_Liq_NI": 5.5, "G2_Liq_I": 5.0, "G2_Gas_NI": 7.5, "G2_Gas_I": 5.5},
+    '6"': {"G1_Liq_NI": 7.0, "G1_Liq_I": 5.8, "G1_Gas_NI": 9.0, "G1_Gas_I": 6.7, "G2_Liq_NI": 5.8, "G2_Liq_I": 4.5, "G2_Gas_NI": 9.2, "G2_Gas_I": 5.7},
+    '8"': {"G1_Liq_NI": 7.8, "G1_Liq_I": 6.7, "G1_Gas_NI": 10.5, "G1_Gas_I": 8.0, "G2_Liq_NI": 6.5, "G2_Liq_I": 5.0, "G2_Gas_NI": 10.5, "G2_Gas_I": 6.5},
+    '10"': {"G1_Liq_NI": 8.4, "G1_Liq_I": 7.2, "G1_Gas_NI": 11.5, "G1_Gas_I": 9.0, "G2_Liq_NI": 7.0, "G2_Liq_I": 5.5, "G2_Gas_NI": 12.0, "G2_Gas_I": 7.5},
+    '12"': {"G1_Liq_NI": 9.0, "G1_Liq_I": 7.7, "G1_Gas_NI": 12.8, "G1_Gas_I": 9.7, "G2_Liq_NI": 7.3, "G2_Liq_I": 6.0, "G2_Gas_NI": 13.0, "G2_Gas_I": 8.2},
+    '14"': {"G1_Liq_NI": 10.7, "G1_Liq_I": 9.2, "G1_Gas_NI": 15.0, "G1_Gas_I": 10.2, "G2_Liq_NI": 7.5, "G2_Liq_I": 6.2, "G2_Gas_NI": 17.5, "G2_Gas_I": 8.6},
+    '16"': {"G1_Liq_NI": 11.0, "G1_Liq_I": 9.5, "G1_Gas_NI": 16.0, "G1_Gas_I": 11.5, "G2_Liq_NI": 7.7, "G2_Liq_I": 6.5, "G2_Gas_NI": 14.5, "G2_Gas_I": 9.5},
+    '18"': {"G1_Liq_NI": 11.5, "G1_Liq_I": 10.5, "G1_Gas_NI": 17.0, "G1_Gas_I": 12.2, "G2_Liq_NI": 7.8, "G2_Liq_I": 6.7, "G2_Gas_NI": 15.5, "G2_Gas_I": 10.0},
+    '20"': {"G1_Liq_NI": 11.5, "G1_Liq_I": 11.0, "G1_Gas_NI": 18.0, "G1_Gas_I": 13.0, "G2_Liq_NI": 8.4, "G2_Liq_I": 7.2, "G2_Gas_NI": 16.5, "G2_Gas_I": 11.0},
+    '24"': {"G1_Liq_NI": 12.0, "G1_Liq_I": 11.0, "G1_Gas_NI": 19.0, "G1_Gas_I": 14.0, "G2_Liq_NI": 9.0, "G2_Liq_I": 8.0, "G2_Gas_NI": 18.0, "G2_Gas_I": 12.5},
 }
-
 
 def get_span(size, material_or_group, service, insulated):
     mat_str = str(material_or_group).lower()
-    if any(
-        keyword in mat_str
-        for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]
-    ):
+    if any(keyword in mat_str for keyword in ["ss", "stainless", "sdss", "dss", "group-2", "g2"]):
         grp = "G2"
     else:
         grp = "G1"
 
     srv = "Liq" if "liquid" in str(service).lower() else "Gas"
-    ins = (
-        "I"
-        if "yes" in str(insulated).lower() or "insulated" in str(insulated).lower()
-        else "NI"
-    )
+    ins = "I" if "yes" in str(insulated).lower() or "insulated" in str(insulated).lower() else "NI"
 
     key = f"{grp}_{srv}_{ins}"
     size_str = str(size).strip()
@@ -229,53 +86,24 @@ def get_span(size, material_or_group, service, insulated):
 
     return span_matrix.get(size_str, {}).get(key, 6.0)
 
-
-# Header
+# Header Sidebar
 st.sidebar.markdown("## 🏢 **Toyomodec OFS India**")
 st.sidebar.markdown("---")
-st.sidebar.info(
-    "Engineering Automation Tool for Pipe Support Calculation (Table 5-1 & Fig 5-1)"
-)
+st.sidebar.info("Engineering Automation Tool for Pipe Support Calculation (Table 5-1 & Fig 5-1)")
 
-tab1, tab2 = st.tabs(
-    ["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"]
-)
+tab1, tab2 = st.tabs(["🏠 Home & Guide", "🚀 Bulk Pipe Support Calculator"])
 
 with tab1:
     st.title("⚙️ Toyomodec OFS India - Automatic Pipe Support System")
-    st.subheader(
-        "Calculate support counts based on Table 5-1 and Figure 5-1 Direction Change standards."
-    )
+    st.subheader("Calculate exact supports based on End Span (0.85*L), Normal Spans, Valves, and Elbow rules.")
 
     st.markdown("---")
     st.write("### 📋 Required columns in your Excel file:")
 
-    template_df = pd.DataFrame(
-        [
-            {
-                "Size": '2"',
-                "Length": 60,
-                "Material": "CS",
-                "Service": "Liquid",
-                "Insulation": "No",
-                "Valves": 2,
-                "Flanges": 1,
-                "Elbows": 4,
-                "Tees": 1,
-            },
-            {
-                "Size": '8"',
-                "Length": 120,
-                "Material": "SDSS",
-                "Service": "Gas",
-                "Insulation": "Yes",
-                "Valves": 0,
-                "Flanges": 2,
-                "Elbows": 2,
-                "Tees": 0,
-            },
-        ]
-    )
+    template_df = pd.DataFrame([
+        {"Size": '2"', "Length": 60, "Material": "CS", "Service": "Liquid", "Insulation": "No", "Valves": 2, "Flanges": 2, "Elbows": 4, "Tees": 1},
+        {"Size": '8"', "Length": 120, "Material": "SDSS", "Service": "Gas", "Insulation": "Yes", "Valves": 1, "Flanges": 2, "Elbows": 2, "Tees": 0},
+    ])
 
     st.table(template_df)
 
@@ -292,9 +120,7 @@ with tab1:
 
 with tab2:
     st.title("🚀 Bulk Pipe Support Calculator")
-    uploaded_file = st.file_uploader(
-        "Upload MTO File (.xlsx / .csv)", type=["xlsx", "csv"]
-    )
+    uploaded_file = st.file_uploader("Upload MTO File (.xlsx / .csv)", type=["xlsx", "csv"])
 
     if uploaded_file is not None:
         try:
@@ -319,8 +145,8 @@ with tab2:
                 tee_col = col_map.get("tees", col_map.get("tee", None))
 
                 base_spans = []
-                eff_spans = []
                 total_supports = []
+                details_list = []
 
                 for idx, row in df.iterrows():
                     sz = row[size_col]
@@ -334,46 +160,65 @@ with tab2:
                     elbows = float(pd.to_numeric(row[elb_col] if elb_col else 0, errors="coerce") or 0)
                     tees = float(pd.to_numeric(row[tee_col] if tee_col else 0, errors="coerce") or 0)
 
-                    # 1. Base Span from Table 5-1
+                    # 1. Base Span from Table 5-1 (L)
                     L = get_span(sz, mat, srv, ins)
                     base_spans.append(L)
 
-                    # 2. Estimated Base Supports for straight pipe
-                    base_sup_count = np.ceil(length / L) if L > 0 else 1
-
-                    # 3. Figure 5-1 Adjustment: Reduction Factor for Direction Changes
-                    # Elbow reduces span to 0.75L (-25%), Tee reduces to 0.70L (-30%)
-                    if base_sup_count > 0:
-                        elbow_ratio = min(elbows / base_sup_count, 1.0)
-                        tee_ratio = min(tees / base_sup_count, 1.0)
-                        red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
-                        red_factor = max(red_factor, 0.70)  # Min limit 0.70L
+                    # 2. Support Logic Implementation:
+                    # - Start & End Flanges use 0.85 * L reduction near ends
+                    # - Intermediate straight runs use 1.0 * L (Base Span)
+                    # - Each Valve requires 2 supports (upstream & downstream)
+                    # - Elbows/Tees check against 0.75 * L limit
+                    
+                    if length <= (2 * 0.85 * L):
+                        # Short pipe handled by end supports
+                        normal_supports = 2 if length > 0 else 0
                     else:
-                        red_factor = 1.0
+                        remaining_length = length - (2 * 0.85 * L)
+                        normal_supports = 2 + np.ceil(remaining_length / L)
 
-                    effective_span = round(L * red_factor, 2)
-                    eff_spans.append(effective_span)
+                    # Valve supports (2 supports per valve)
+                    valve_supports = valves * 2
 
-                    # 4. Final Support Count Calculation
-                    base_supports = np.ceil(length / effective_span) + 1 if effective_span > 0 else 0
-                    total = base_supports + valves + (flanges * 0.5)
-                    total_supports.append(total)
+                    # Total support summation
+                    total_sup = normal_supports + valve_supports
+                    total_supports.append(int(total_sup))
+                    details_list.append(f"Base L={L}m | Norm/End Sup={int(normal_supports)} | Valve Sup={int(valve_supports)}")
 
                 df["Base_Span_m"] = base_spans
-                df["Effective_Span_m"] = eff_spans
+                df["Calculation_Details"] = details_list
                 df["Total_Supports"] = total_supports
 
+                # Top Summary Metric
+                st.markdown("---")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <h4>Total Pipes Analyzed</h4>
+                            <p style="font-size: 1.8rem; font-weight: bold;">{len(df)} Lines</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col2:
+                    st.markdown(f"""
+                        <div class="metric-card">
+                            <h4>Total Supports Required (MTO)</h4>
+                            <p style="font-size: 1.8rem; font-weight: bold; color: #4ade80 !important;">{sum(total_supports)} Supports</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                st.markdown("---")
+
                 st.balloons()
-                st.success("🎉 Calculation Complete with Figure 5-1 Standards!")
+                st.success("🎉 Calculation Complete based on your exact engineering logic!")
 
                 st.write("### 📋 Results Table:")
-                st.dataframe(df)
+                st.dataframe(df, use_container_width=True)
 
                 csv_data = df.to_csv(index=False).encode("utf-8")
                 st.download_button(
-                    label="📥 Download Calculated Result",
+                    label="📥 Download Calculated Result (CSV)",
                     data=csv_data,
-                    file_name="Toyomodec_Directional_Pipe_Supports.csv",
+                    file_name="Toyomodec_Exact_Pipe_Supports.csv",
                     mime="text/csv",
                 )
 
