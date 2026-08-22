@@ -152,24 +152,24 @@ with tab2:
 
                 for idx, row in df.iterrows():
                     sz = row[size_col]
-                    mat = row[mat_col] if mat_col else "CS"
-                    srv = row[srv_col] if srv_col else "Liquid"
-                    ins = row[ins_col] if ins_col else "No"
+                    mat = row[mat_col] if mat_col and pd.notna(row[mat_col]) else "CS"
+                    srv = row[srv_col] if srv_col and pd.notna(row[srv_col]) else "Liquid"
+                    ins = row[ins_col] if ins_col and pd.notna(row[ins_col]) else "No"
                     length = float(pd.to_numeric(row[len_col], errors="coerce") or 0)
 
-                    valves = float(pd.to_numeric(row[val_col] if val_col else 0, errors="coerce") or 0)
-                    elbows = float(pd.to_numeric(row[elb_col] if elb_col else 0, errors="coerce") or 0)
-                    tees = float(pd.to_numeric(row[tee_col] if tee_col else 0, errors="coerce") or 0)
+                    valves = float(pd.to_numeric(row[val_col], errors="coerce")) if val_col and pd.notna(row[val_col]) else 0.0
+                    elbows = float(pd.to_numeric(row[elb_col], errors="coerce")) if elb_col and pd.notna(row[elb_col]) else 0.0
+                    tees = float(pd.to_numeric(row[tee_col], errors="coerce")) if tee_col and pd.notna(row[tee_col]) else 0.0
 
                     # 1. Base Span from Table 5-1 (L)
                     L = get_span(sz, mat, srv, ins)
                     base_span_list.append(L)
 
-                    # 2. Base support without flange, valve, tee, elbow (Pure length / L)
+                    # 2. Base support without flange, valve, tee, elbow
                     base_sup_pure = np.ceil(length / L) if L > 0 else 0
                     base_sup_no_extras_list.append(int(base_sup_pure))
 
-                    # 3. Base span support (End Span 0.85*L rule applied for start/end)
+                    # 3. Base span support (End Span 0.85*L rule)
                     if length <= (2 * 0.85 * L):
                         base_span_sup = 2 if length > 0 else 0
                     else:
@@ -182,13 +182,13 @@ with tab2:
                         elbow_ratio = min(elbows / base_sup_pure, 1.0)
                         tee_ratio = min(tees / base_sup_pure, 1.0)
                         red_factor = 1.0 - (0.25 * elbow_ratio) - (0.30 * tee_ratio)
-                        red_factor = max(red_factor, 0.75) # Min limit 0.75L rule
+                        red_factor = max(red_factor, 0.75)
                     else:
                         red_factor = 1.0
 
                     eff_span = L * red_factor
                     
-                    # 5. Effective Base Span Support (Applying End Span 0.85 * eff_span)
+                    # 5. Effective Base Span Support
                     if length <= (2 * 0.85 * eff_span):
                         eff_base_sup = 2 if length > 0 else 0
                     else:
@@ -198,7 +198,7 @@ with tab2:
                     eff_base_span_support_list.append(int(eff_base_sup))
                     eff_base_span_m_list.append(round(eff_span, 2))
 
-                    # 6. Total Supports Calculation (Valves need 2 supports each; Flanges require 0 extra support)
+                    # 6. Total Supports (Valves need 2 supports each; Flanges require 0 extra support)
                     valve_supports = valves * 2
                     total_sup = eff_base_sup + valve_supports
                     total_supports_list.append(int(total_sup))
